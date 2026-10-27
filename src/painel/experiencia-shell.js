@@ -41,7 +41,7 @@
   const searchForm=make('form',null,'lv-global-search');searchForm.id='lv-global-search';searchForm.setAttribute('role','search');
   const input=make('input');input.id='lv-global-query';input.type='search';input.maxLength=300;input.placeholder='Buscar pessoa, assunto ou combinado';input.setAttribute('aria-label','Buscar pessoa, assunto ou combinado');
   const submit=make('button','Buscar','lv-button');submit.type='submit';searchForm.append(input,submit);
-  const main=document.querySelector('.workspace main');main.prepend(searchForm);
+  const main=document.querySelector('.workspace main'),globalHeader=make('div',null,'lv-global-header');globalHeader.append(searchForm);main.prepend(globalHeader);
   searchForm.onsubmit=e=>{e.preventDefault();void run(async()=>{conversa='';get('search').value=input.value;get('clear-filter').hidden=true;window.lumeSetMemoryMode?.('search');await window.navegarLume('memory');get('results').tabIndex=-1;get('results').focus({preventScroll:true});},submit);};
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&!document.querySelector('dialog[open]')){e.preventDefault();input.focus();}});
 
@@ -50,8 +50,8 @@
   memoryHeading.querySelector('div > p:last-child').textContent='Encontre o combinado e volte à mensagem que o sustenta.';
   const memoryTools=make('div',null,'lv-toolbar');memoryTools.id='lv-memory-tools';
   memoryTools.append(button('Buscar fontes',async()=>{window.lumeSetMemoryMode('search');await window.carregarModoMemoria();}),button('Conversas',async()=>{window.lumeSetMemoryMode('conversations');await window.carregarModoMemoria();}),button('Relações',()=>window.navegarLume('graph')));
-  const extra=make('details');extra.append(make('summary','Mais na memória'));
-  for(const [mode,label]of [['ask','Perguntar às fontes'],['commands','Itens organizados'],['businesses','Negócios confirmados'],['projects','Projetos vinculados']])extra.append(button(label,async()=>{window.lumeSetMemoryMode(mode);await window.carregarModoMemoria();}));
+  const extra=make('details',null,'lv-memory-more'),extraActions=make('div',null,'lv-toolbar lv-memory-more-actions');extra.append(make('summary','Mais na memória'),extraActions);
+  for(const [mode,label]of [['ask','Perguntar às fontes'],['commands','Itens organizados'],['businesses','Negócios confirmados'],['projects','Projetos vinculados']])extraActions.append(button(label,async()=>{window.lumeSetMemoryMode(mode);await window.carregarModoMemoria();}));
   memoryTools.append(extra);memoryHeading.after(memoryTools);get('memory-modes').hidden=true;
   const filters=make('details',null,'lv-memory-filters');filters.id='lv-memory-filters';filters.append(make('summary','Filtrar pessoa, assunto, período ou fonte'));
   const fields=make('div',null,'lv-filters');
@@ -81,7 +81,7 @@
   }
   personSearch.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();personFind.click();}});
   filters.addEventListener('toggle',()=>{if(filters.open&&!peopleLoaded)void run(()=>loadPeople());});
-  const contacts=get('contacts');const attendance=make('div',null,'lv-toolbar');
+  const contacts=get('contacts');const attendance=make('div',null,'lv-toolbar lv-people-attendance');
   attendance.append(make('p','Acompanhar, preparar resposta e atender têm permissões separadas.'),button('Atendimento por pessoa',async()=>{await window.abrirAjuste('pessoal-panel');get('pessoal-atendimento')?.scrollIntoView({block:'start'});}));contacts.prepend(attendance);
 
   window.lumeSyncNavigation=()=>{

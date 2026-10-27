@@ -102,8 +102,9 @@ html body.lume-vivo .workspace.desk06 .workspace-name { min-width: 0; padding: 2
 html body.lume-vivo .workspace.desk06 .workspace-name :is(b,small) { font-size: 14px; overflow-wrap: anywhere; }
 html body.lume-vivo .workspace.desk06 .sidebar-bottom { margin-top: auto; padding-top: 24px; }
 html body.lume-vivo .workspace.desk06 .sidebar-bottom :is(small,b,p) { font-size: 14px; color: var(--lv-muted); letter-spacing: 0; }
-html body.lume-vivo .workspace.desk06 main { margin-left: var(--lv-sidebar); width: calc(100% - var(--lv-sidebar)); min-width: 0; min-height: 100dvh; background: var(--lv-bg); }
-html body.lume-vivo .workspace.desk06 .main-content { width: 100%; max-width: 1440px; margin: 0 auto; padding: 32px clamp(20px,3vw,48px) 48px; }
+html body.lume-vivo .workspace.desk06 main { --lv-content-gutter:clamp(20px,3vw,48px); margin-left: var(--lv-sidebar); width: calc(100% - var(--lv-sidebar)); min-width: 0; min-height: 100dvh; background: var(--lv-bg); }
+html body.lume-vivo .workspace.desk06 .main-content { width: 100%; max-width: 1440px; margin: 0 auto; padding: 24px var(--lv-content-gutter) 48px; }
+body.lume-vivo .lv-global-header { display:grid; gap:12px; width:100%; max-width:1440px; min-width:0; margin:0 auto; padding:24px var(--lv-content-gutter) 0; }
 /* New views deliberately outrank the old desk06 type rules without IDs. */
 html body.lume-vivo .lv-page { display: grid; gap: 32px; min-width: 0; font: 400 16px/1.6 var(--lv-font); color: var(--lv-ink); }
 html body.lume-vivo .lv-page-heading { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px 24px; padding-block: 12px 8px; border-bottom: 0; }
@@ -173,6 +174,19 @@ body.lume-vivo .lv-search { flex: 1 1 280px; }
 body.lume-vivo .lv-global-search { padding: 14px 18px; background: var(--lv-raised); border: 1px solid var(--lv-border); border-radius: 24px; box-shadow: var(--lv-shadow); }
 html body.lume-vivo :is(.lv-search,.lv-global-search) input { flex: 1 1 180px; width: auto; min-width: 0; }
 body.lume-vivo .lv-global-search > label { font-size: 14px; margin: 0; color: var(--lv-muted); }
+/* Keep the retained memory tools in the same spacing system as the new views. */
+html body.lume-vivo .workspace.desk06 #memory .memory-heading { margin-bottom:20px; }
+body.lume-vivo #lv-memory-tools { margin-bottom:16px; }
+body.lume-vivo .lv-memory-more { min-width:0; max-width:100%; }
+body.lume-vivo .lv-memory-more[open] { flex-basis:100%; }
+body.lume-vivo .lv-memory-more > summary { width:fit-content; max-width:100%; min-height:44px; padding:10px 16px; border:1px solid var(--lv-border); border-radius:var(--lv-radius-sm); background:var(--lv-raised); color:var(--lv-ink); cursor:pointer; }
+body.lume-vivo .lv-memory-more-actions { margin-top:12px; }
+html body.lume-vivo .workspace.desk06 #search-form { flex-wrap:wrap; gap:12px; padding:12px 16px; min-width:0; }
+html body.lume-vivo .workspace.desk06 #search-form > input { flex:1 1 180px; width:auto; min-width:0; }
+body.lume-vivo .lv-memory-filters { flex:1 1 100%; min-width:0; max-width:100%; border-top:1px solid var(--lv-border); padding-top:8px; }
+body.lume-vivo .lv-memory-filters > summary { min-height:44px; padding:10px 0; cursor:pointer; overflow-wrap:anywhere; }
+body.lume-vivo .lv-memory-filters > .lv-filters { margin-top:12px; }
+body.lume-vivo .lv-memory-filters :is(input,select) { min-width:0; }
 /* Supports a real dialog or a role=dialog section with separately managed backdrop. */
 body.lume-vivo .lv-drawer-backdrop { position: fixed; inset: 0; z-index: 200; background: #151b1866; }
 html body.lume-vivo .lv-drawer {
@@ -220,7 +234,7 @@ body.lume-vivo .lv-sr-only { position: absolute; width: 1px; height: 1px; paddin
   html body.lume-vivo .workspace.desk06 .nav-secondary button { flex: 1 1 140px; }
   html body.lume-vivo .workspace.desk06 :is(.nav-label,.workspace-name,.sidebar-bottom) { display: none; }
   html body.lume-vivo .workspace.desk06 .sidebar .topbar { margin-top: 12px; }
-  html body.lume-vivo .workspace.desk06 main { margin: 0; width: 100%; min-height: 0; }
+  html body.lume-vivo .workspace.desk06 main { --lv-content-gutter:16px; margin: 0; width: 100%; min-height: 0; }
   html body.lume-vivo .workspace.desk06 .main-content { padding: 24px 16px 32px; }
   html body.lume-vivo .lv-page { gap: 24px; }
   body.lume-vivo .lv-card { padding: 20px; }
@@ -248,25 +262,30 @@ body.lume-vivo .lv-board > .lv-status { grid-column: 1 / -1; }
 @media (min-width:761px) { html body.lume-vivo .workspace.desk06 .sidebar nav { flex:1; } html body.lume-vivo .workspace.desk06 .nav-secondary { margin-top:auto; } }
 
 /* Lume 1.0: shared controls, real people and paginated source timeline. */
-body.lume-vivo .l1-global-controls { position:relative; display:flex; flex-wrap:wrap; align-items:flex-start; gap:8px 12px; margin:0 24px 8px; }
-body.lume-vivo .l1-global-controls label { display:flex; align-items:center; gap:8px; color:var(--lv-muted); font-size:14px; }
+body.lume-vivo .l1-global-controls { position:relative; display:flex; flex-wrap:wrap; align-items:center; gap:12px; min-width:0; margin:0; }
+body.lume-vivo .l1-global-controls label { display:flex; align-items:center; gap:12px; min-width:0; margin:0; color:var(--lv-muted); font-size:14px; }
 body.lume-vivo .sidebar .brand .l1-brand-version { font-size:12px; font-weight:600; letter-spacing:.03em; padding:3px 6px; color:var(--lv-yellow-ink); background:var(--lv-yellow-bg); border-radius:6px; }
-body.lume-vivo .l1-global-controls select { min-height:44px; padding:8px 12px; border:1px solid var(--lv-border); border-radius:14px; background:var(--lv-surface); color:var(--lv-ink); }
-body.lume-vivo .l1-sound-options { min-width:0; max-width:100%; }
+body.lume-vivo .l1-global-controls select { width:auto; min-width:0; min-height:44px; padding:8px 12px; border:1px solid var(--lv-border); border-radius:14px; background:var(--lv-surface); color:var(--lv-ink); }
+body.lume-vivo .l1-sound-options { position:relative; min-width:0; max-width:100%; }
 body.lume-vivo .l1-sound-options > summary { display:flex; align-items:center; min-height:44px; padding:8px 14px; box-sizing:border-box; border:1px solid var(--lv-border); border-radius:14px; background:var(--lv-surface); color:var(--lv-ink); cursor:pointer; }
 body.lume-vivo .l1-sound-options > summary:focus-visible { outline:3px solid var(--lv-focus,#315bc7); outline-offset:3px; }
-body.lume-vivo .l1-sound-panel { position:absolute; z-index:30; top:calc(100% + 8px); left:0; width:320px; max-width:100%; padding:16px; box-sizing:border-box; border:1px solid var(--lv-border); border-radius:20px; background:var(--lv-surface); box-shadow:var(--lv-panel-shadow); }
+body.lume-vivo .l1-sound-panel { position:absolute; z-index:30; top:calc(100% + 12px); left:0; width:320px; max-width:calc(100vw - 2 * var(--lv-content-gutter)); padding:16px; box-sizing:border-box; border:1px solid var(--lv-border); border-radius:20px; background:var(--lv-surface); box-shadow:var(--lv-panel-shadow); }
 body.lume-vivo .l1-sound-panel label { display:grid; grid-template-columns:1fr auto; width:100%; color:var(--lv-ink); }
 body.lume-vivo .l1-sound-panel input[type=range] { grid-column:1 / -1; min-width:0; width:100%; min-height:44px; accent-color:var(--lv-yellow-ink); }
 body.lume-vivo .l1-sound-panel .lv-toolbar { flex-wrap:wrap; }
 body.lume-vivo .l1-sound-panel .lv-status { padding:0; margin:0; border:0; background:none; font-size:14px; }
-@media(max-width:700px) { body.lume-vivo .l1-sound-panel { position:static; width:100%; max-width:100%; margin-top:8px; } }
+@media(max-width:1100px) { body.lume-vivo .l1-sound-options[open] { flex-basis:100%; } body.lume-vivo .l1-sound-panel { position:static; width:min(100%,440px); max-width:100%; margin-top:12px; } }
 body.lume-vivo #l1-global-status { min-height:0; margin:0; padding:0; border:0; background:none; font-size:14px; }
-body.lume-vivo #l1-global-status:not(:empty) { margin:8px 24px 16px; }
+body.lume-vivo #l1-global-status:empty { display:none; }
+body.lume-vivo #l1-global-status:not(:empty) { margin:0; }
 body.lume-vivo #lv-today > .lv-connection { padding:12px 16px; font-size:14px; }
 body.lume-vivo #lv-today .lv-page-heading > .lv-status { padding:0; border:0; background:none; font-size:14px; }
 body.lume-vivo #lv-today .lv-page-heading .lv-toolbar select { width:auto; flex:1; }
 body.lume-vivo .l1-people-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr)); gap:16px; }
+html body.lume-vivo .workspace.desk06 .contact-workspace { display:grid; gap:24px; min-width:0; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; }
+html body.lume-vivo .l1-people { gap:20px; }
+body.lume-vivo .lv-people-attendance { padding-top:16px; border-top:1px solid var(--lv-border); }
+body.lume-vivo .lv-people-attendance > p { flex:1 1 260px; min-width:0; margin:0; }
 body.lume-vivo .l1-person { min-width:0; align-content:start; }
 body.lume-vivo .l1-person h2 { font-size:20px; overflow-wrap:anywhere; }
 body.lume-vivo .l1-person .l1-entity-kind { text-transform:uppercase; letter-spacing:.08em; font-size:12px; }
@@ -299,6 +318,20 @@ body.lume-vivo .l1-dialog :is(input,select,textarea) { max-width:100%; }
 }
 
 /* Shared soft surfaces for the retained settings/source controls. */
+html body.lume-vivo .workspace.desk06 .settings-choices { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; border:0; }
+html body.lume-vivo .workspace.desk06 .settings-choice { min-width:0; padding:20px 24px; }
+html body.lume-vivo .workspace.desk06 .settings-group-head { display:grid; gap:8px; margin-bottom:20px; }
+html body.lume-vivo .workspace.desk06 .settings-group-head > :is(h2,p,button) { margin:0; }
+html body.lume-vivo .workspace.desk06 .settings-group-head > button { justify-self:start; min-height:44px; }
+html body.lume-vivo .workspace.desk06 .settings-group-cards { display:grid; grid-template-columns:minmax(0,1fr); gap:20px; }
+html body.lume-vivo .workspace.desk06 .settings-group-cards > .settings-card { margin:0; min-width:0; }
+html body.lume-vivo .workspace.desk06 .settings-card .button-row { flex-wrap:wrap; gap:12px; }
+html body.lume-vivo .workspace.desk06 #settings-group-connections .button-row { gap:12px; }
+html body.lume-vivo .workspace.desk06 .settings-card .button-row > * { min-width:0; max-width:100%; white-space:normal; }
+html body.lume-vivo .workspace.desk06 .settings-card form > label:not(.check):not(:has(>input:is([type="checkbox"],[type="radio"]))) { display:grid; gap:8px; margin:16px 0 8px; }
+html body.lume-vivo .workspace.desk06 .settings-card label:has(>input:is([type="checkbox"],[type="radio"])) { display:flex; align-items:center; gap:12px; min-height:44px; margin:0; }
+html body.lume-vivo .workspace.desk06 .settings-card label > input:is([type="checkbox"],[type="radio"]) { flex:0 0 20px; width:20px; height:20px; min-height:20px; margin:0; }
+html body.lume-vivo .workspace.desk06 .settings-card :is(input,select,textarea) { min-width:0; }
 html body.lume-vivo .workspace.desk06 :is(.settings-card,.settings-choice,.result,.conversation-card,.contact-card) { border:1px solid var(--lv-border); border-radius:var(--lv-radius); background:var(--lv-surface); color:var(--lv-ink); box-shadow:var(--lv-shadow); }
 html body.lume-vivo .workspace.desk06 .settings-card { padding:clamp(20px,3vw,32px); }
 html body.lume-vivo .workspace.desk06 :is(.settings-card,.settings-choice) :is(h2,h3,b,strong) { color:var(--lv-ink); font-family:var(--lv-font); }

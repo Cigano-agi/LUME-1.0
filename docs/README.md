@@ -1,6 +1,6 @@
 # Documentação do Lume
 
-O ponto de entrada do produto é o [README principal](../README.md). Este índice organiza os documentos por finalidade; estados históricos continuam identificados por data e não substituem a entrega atual. Os dois pushes privados em `main`, `f6405c5` e `35c290c`, estão confirmados, com Actions desligado; o segundo é o último envio comprovado neste registro. Candidata beta.8 e instalador estão preparados, com ensaio isolado aprovado e recuperação verificada independentemente. A instalação beta.8 está bloqueada pela política de scripts do PowerShell antes do NSIS; a instalada permanece beta.7. O [registro atual](lume-soft/VERIFICACAO.md) distingue preparação, execução, revisão, envio e instalação, incluindo os limites destas notas posteriores.
+O ponto de entrada do produto é o [README principal](../README.md). A revisão beta.9 corrige diagramação e espaçamento e confere os sons da companhia. A instalação permanece beta.7; o bloqueio anterior do script ocorreu antes do NSIS. O envio anterior confirmado é `0a772a2`, com Actions desligado. Estados históricos continuam identificados por data e não substituem a entrega atual. Consulte os [ajustes e provas atuais](lume-soft/AJUSTES-LAYOUT-SOM.md), o [texto para a guilda](lume-soft/ANUNCIO-GUILDA.md) e o [registro anterior](lume-soft/VERIFICACAO.md).
 
 | Preciso encontrar… | Comece aqui |
 | --- | --- |

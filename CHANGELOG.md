@@ -1,5 +1,13 @@
 # Mudanças
 
+## 3.2.0-beta.9 · Lume 1.0 · 27/10/2026
+
+Busca e controles rápidos passam a compartilhar margens e alinhamento. Ajustes ganha espaço entre entradas e cartões; Memória separa filtros e ações adicionais; Pessoas ganha espaçamento entre blocos. Checkboxes de Aparência permanecem ao lado de seus textos.
+
+A revisão independente repetiu 68 capturas com zero violações geométricas e aprovou 39 testes de interface, movimento e versão. O som existente foi capturado como PCM real: cinco WAVs, volume proporcional e 24 testes focais independentes aprovados. Os testes não comprovam audição nos alto-falantes, som nativo do Windows ou zoom nativo. Os dois harnesses são reproduzíveis e usam perfis sintéticos isolados.
+
+O anúncio foi preparado função por função, em linguagem simples, como convite ao piloto. A candidata beta.9 e o instalador foram preparados e inspecionados: 134 arquivos extraídos idênticos à candidata. App e instalador não têm assinatura digital e não foram executados nesta revisão; a janela observada continua na beta.7. O bloqueio de instalação anterior permanece, sem tentativa alternativa. Organização automática, coleta positiva real e plataformas ainda têm validações próprias. A regressão de 1.079 testes abaixo pertence à beta.8, sem nova execução integral nesta revisão. [Provas e limites atuais](docs/lume-soft/AJUSTES-LAYOUT-SOM.md).
+
 ## 3.2.0-beta.8 · Lume 1.0 · 27/10/2026
 
 Interface com superfícies suaves e Open Runde local. Personagem vetorial compartilhado com 13 expressões, galeria e duas surpresas finitas. Som opt-in, com cancelamento e deduplicação. Acompanhamento local opcional de aplicativos, com pausa, retenção, exclusões e apagamento.

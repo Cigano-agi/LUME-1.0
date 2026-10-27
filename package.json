@@ -1,6 +1,6 @@
 {
   "name": "assessor-2.0",
-  "version": "3.2.0-beta.8",
+  "version": "3.2.0-beta.9",
   "private": true,
   "main": "desktop/main.cjs",
   "author": "ReadyWorks",
@@ -72,7 +72,7 @@
     "appId": "com.readyworks.assessor",
     "productName": "Lume",
     "extraMetadata": {
-      "version": "3.2.0-beta.8"
+      "version": "3.2.0-beta.9"
     },
     "publish": [
       {

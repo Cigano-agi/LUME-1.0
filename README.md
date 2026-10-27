@@ -6,11 +6,11 @@
 
 Lume reúne memória de conversas autorizadas, compromissos e projetos em um aplicativo desktop. O contexto fica ligado à sua origem; sugestões podem ser corrigidas e resultados têm estados distintos de conclusão, verificação, envio e aceite.
 
-**LUME 1.0 · prévia desktop · técnica `3.2.0-beta.8`**
+**LUME 1.0 · prévia desktop · técnica `3.2.0-beta.9`**
 
 [Conheça o produto](#um-lugar-para-recuperar-o-contexto) · [Experiência e privacidade](docs/lume-soft/README.md) · [Desenvolvimento](#desenvolvimento) · [Documentação](docs/README.md) · [Estado da entrega](DONE.md)
 
-**Prévia em validação.** A candidata Windows beta.8 passou pelo ensaio em perfil isolado e tem recuperação verificada. A atualização parou na política de scripts do PowerShell antes do instalador; a versão instalada permanece beta.7. Organização com dados reais, aceite de utilidade, macOS e hardware de 8 GB ainda têm validações pendentes. Consulte o [estado da entrega](DONE.md) e as [provas e limites](docs/lume-soft/VERIFICACAO.md).
+**Prévia em validação.** A beta.9 corrige o espaçamento das telas e acrescenta prova do áudio sintetizado. A versão instalada permanece beta.7; o bloqueio anterior ocorreu no script, antes do instalador. Organização com dados reais, aceite de utilidade, macOS e hardware de 8 GB ainda têm validações pendentes. Consulte o [estado da entrega](DONE.md), os [ajustes atuais](docs/lume-soft/AJUSTES-LAYOUT-SOM.md) e o [registro anterior](docs/lume-soft/VERIFICACAO.md).
 
 Este repositório é privado e começa com um snapshot curado. O [histórico anterior](docs/ORIGEM.md), seus commits e worktrees foram preservados; dados pessoais ficam fora deste conteúdo.
 
