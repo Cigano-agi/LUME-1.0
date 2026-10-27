@@ -4,11 +4,20 @@ Preparado em 27/10/2026. **Convite para conhecer e participar do piloto; não en
 
 ## Mensagem curta
 
-Pessoal, estou preparando a primeira prévia do **Lume**, um aplicativo para ajudar a encontrar o que foi combinado nas conversas e acompanhar o que ficou pendente.
+👻 **Lume 1.0 — organize o trabalho e não deixe vendas pelo caminho**
 
-A ideia é simples: você procura uma pessoa ou um assunto, encontra o contexto e pode conferir a mensagem de onde aquilo veio. O Lume reúne memória, pessoas, oportunidades e projetos, com um pequeno fantasma que acompanha os avisos do aplicativo.
+Uma primeira versão em testes para quem cuida de vendas, equipe e projetos ao mesmo tempo.
 
-Vamos começar com um grupo pequeno de testes. Abaixo explico o que cada parte faz e o que ainda está em validação. Quem quiser participar do piloto pode me chamar.
+- 🔎 **Memória:** encontre o que foi combinado e confira a mensagem original.
+- 📁 **Projetos:** acompanhe trabalhos, pendências e entregas sem misturar os assuntos.
+- 👥 **Pessoas:** consulte o contexto de clientes, fornecedores e equipe.
+- 💰 **Vendas:** acompanhe oportunidades e retornos pendentes para não deixar cliente esperando.
+- 📌 **Agora:** veja o que precisa da sua atenção e o que está em andamento.
+- 👻 **Companhia:** um fantasminha opcional com avisos e som que você controla.
+
+🎁 **Quer baixar e testar? Por enquanto é grátis! Me chama para entrar no piloto e receber acesso.**
+
+Nota editorial, fora da mensagem: o repositório continua privado e não há download público validado. O CTA solicita acesso ao piloto; não informa que o pacote já está disponível para todos. A gratuidade foi reafirmada pelo usuário em 27/10/2026. A mensagem não foi enviada.
 
 ## Cada função, sem complicação
 

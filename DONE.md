@@ -1,5 +1,11 @@
 # Estado do Lume 1.0
 
+## Ícone e mensagem para a guilda — observação posterior de 27/10/2026
+
+Mensagem de WhatsApp reduzida a seis funções, com convite gratuito para solicitar acesso ao piloto. Repositório permanece privado; não foi anunciado download público disponível. Nada enviado à guilda.
+
+A leitura atual encontrou uma instalação registrada beta.7 e cópias de recuperação/desenvolvimento. O Menu Iniciar abre a recuperação beta.7; a área de trabalho aponta para a instalação. Dois atalhos do Electron, um deles fixado, compartilham o AppUserModelID do Lume e apontam para o executável de desenvolvimento. Essa colisão sustenta o diagnóstico do ícone; não houve teste A/B do shell. **Ícone e atalhos ainda não corrigidos; beta.9 não instalada.** A política de scripts segue Restricted e a recusa anterior não foi contornada. Cópias, perfil e atalhos foram preservados. Os recibos com caminhos pessoais ficam fora do Git.
+
 ## Revisão de espaçamento e som — beta.9, 27/10/2026
 
 Correções implementadas e revisão independente aprovada para layout e áudio. O [relatório atual](docs/lume-soft/AJUSTES-LAYOUT-SOM.md) registra causas, comandos, resultados e limites. O [anúncio para a guilda](docs/lume-soft/ANUNCIO-GUILDA.md) está preparado como convite ao piloto, sem envio ou link de download validado.
