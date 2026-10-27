@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-27T06:02:58.354Z",
+  "results": [
+    {
+      "label": "desktop",
+      "width": 1280,
+      "scroll": 1280,
+      "images": [
+        {
+          "loaded": true,
+          "alt": "Lume 1.0. Clareza para o próximo passo. O personagem fantasma amarelo segura uma lanterna."
+        },
+        {
+          "loaded": true,
+          "alt": "Recuperar contexto em fontes autorizadas; acompanhar projetos e compromissos; conferir resultados e evidências."
+        },
+        {
+          "loaded": true,
+          "alt": "Prancha editorial com seis das treze expressões vetoriais do fantasma Lume disponíveis no painel."
+        }
+      ],
+      "notice": "Material editorial. Produto em validação.Estes visuais não são capturas do aplicativo, prova de desempenho ou anúncio de release. Não contêm conversas, pessoas ou dados reais.",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "label": "mobile",
+      "width": 390,
+      "scroll": 390,
+      "images": [
+        {
+          "loaded": true,
+          "alt": "Lume 1.0. Clareza para o próximo passo. O personagem fantasma amarelo segura uma lanterna."
+        },
+        {
+          "loaded": true,
+          "alt": "Recuperar contexto em fontes autorizadas; acompanhar projetos e compromissos; conferir resultados e evidências."
+        },
+        {
+          "loaded": true,
+          "alt": "Prancha editorial com seis das treze expressões vetoriais do fantasma Lume disponíveis no painel."
+        }
+      ],
+      "notice": "Material editorial. Produto em validação.Estes visuais não são capturas do aplicativo, prova de desempenho ou anúncio de release. Não contêm conversas, pessoas ou dados reais.",
+      "externalRequests": 0,
+      "pageErrors": 0
+    }
+  ],
+  "localLinks": 55,
+  "screenshots": 5,
+  "productAppOpened": false,
+  "realDataUsed": false
+}

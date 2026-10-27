@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="tile" x2="0.8" y2="1"><stop stop-color="#fff6c8"/><stop offset="1" stop-color="#f4ce53"/></linearGradient>
+    <linearGradient id="ghost" x1=".1" y1="0" x2=".8" y2="1"><stop stop-color="#fffde7"/><stop offset=".55" stop-color="#ffe68a"/><stop offset="1" stop-color="#dfb342"/></linearGradient>
+  </defs>
+  <rect x="52" y="52" width="920" height="920" rx="220" fill="url(#tile)"/>
+  <ellipse cx="512" cy="811" rx="241" ry="36" fill="#947329" opacity=".16"/>
+  <g transform="translate(75 85) scale(13.5)">
+    <path d="M13 33C11 18 19 7 32 7C46 6 53 17 52 32L53 48C53 54 49 56 45 52C43 50 42 50 39 53C36 56 33 55 30 52C28 50 26 50 24 53C21 56 18 54 16 52C14 49 10 54 11 47Z" fill="url(#ghost)" stroke="#b89437" stroke-width=".6"/>
+    <path d="M20 23C21 16 26 12 32 12" fill="none" stroke="#fffdf1" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="25" cy="30" rx="2.4" ry="3.6" fill="#36372c"/><ellipse cx="40" cy="30" rx="2.4" ry="3.6" fill="#36372c"/>
+    <path d="M29 39Q33 42 37 38.5" fill="none" stroke="#62532c" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+</svg>

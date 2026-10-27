@@ -1,0 +1,290 @@
+name: Lume macOS
+
+on:
+  push:
+    branches:
+      - "Cigano-agi/caixa-socio"
+  workflow_dispatch:
+    inputs:
+      signed_build:
+        description: "Gerar o DMG universal assinado e notarizado"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lume-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Testar nativamente no Mac ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+            uname_arch: arm64
+            bundle_dir: mac-arm64
+          - arch: x64
+            runner: macos-15-intel
+            uname_arch: x86_64
+            bundle_dir: mac
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    env:
+      TMPDIR: /private/tmp
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+      - name: Preparar Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Instalar dependências reproduzíveis
+        run: npm ci
+      - name: Confirmar ambiente nativo
+        run: |
+          test "$(uname -s)" = "Darwin"
+          test "$(uname -m)" = "${{ matrix.uname_arch }}"
+          node -e "if(process.platform!=='darwin'||process.arch!=='${{ matrix.arch }}')process.exit(1)"
+      - name: Testar núcleo
+        run: npm test
+      - name: Testar aplicativo Electron
+        run: npm run test:desktop
+      - name: Empacotar aplicativo nativo sem publicar
+        run: npx electron-builder --dir --mac --${{ matrix.arch }} --publish never --config.mac.identity=null --config.mac.forceCodeSigning=false --config.mac.notarize=false
+      - name: Auditar conteúdo do pacote nativo
+        env:
+          ASSESSOR_PACKAGE_PLATFORM: darwin
+          ASSESSOR_PACKAGE_ARCH: ${{ matrix.arch }}
+          ASSESSOR_PACKAGE_REQUIRE_ARTIFACT: "0"
+        run: node test/desktop-package.mjs
+      - name: Abrir aplicativo empacotado no Mac
+        env:
+          ASSESSOR_TEST_EXECUTABLE: dist/desktop/${{ matrix.bundle_dir }}/Lume.app/Contents/MacOS/Lume
+        run: npm run test:desktop
+      - name: Guardar evidências sintéticas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lume-macos-smoke-${{ matrix.arch }}-${{ github.run_id }}
+          path: work/desktop-qa/
+          if-no-files-found: warn
+          retention-days: 3
+
+  universal-unsigned:
+    name: Montar universal sem assinatura e provar arm64
+    needs: smoke
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      TMPDIR: /private/tmp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Preparar dependências nativas das duas arquiteturas
+        run: npm run desktop:deps:mac:universal
+      - name: Empacotar aplicativo universal sem assinatura
+        run: npx electron-builder --dir --mac --universal --publish never --config.npmRebuild=false --config.mac.identity=null --config.mac.forceCodeSigning=false --config.mac.notarize=false
+      - name: Conferir pacote universal no arm64
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "arm64"
+          app="dist/desktop/mac-universal/Lume.app"
+          arches=" $(lipo -archs "$app/Contents/MacOS/Lume") "
+          [[ "$arches" == *" arm64 "* ]]
+          [[ "$arches" == *" x86_64 "* ]]
+          node test/macos-universal-native.mjs --app "$app" --architecture arm64
+          ASSESSOR_PACKAGE_PLATFORM=darwin ASSESSOR_PACKAGE_ARCH=universal ASSESSOR_PACKAGE_REQUIRE_ARTIFACT=0 node test/desktop-package.mjs
+          ASSESSOR_TEST_EXECUTABLE="$app/Contents/MacOS/Lume" npm run test:desktop
+          mv work/desktop-qa/evidence.json work/desktop-qa/evidence-universal-arm64.json
+          mkdir -p work/macos-universal-transfer
+          ditto -c -k --sequesterRsrc --keepParent "$app" work/macos-universal-transfer/Lume.app.zip
+          (cd work/macos-universal-transfer && shasum -a 512 Lume.app.zip > Lume.app.zip.sha512)
+      - name: Transferir o mesmo aplicativo universal para Intel
+        uses: actions/upload-artifact@v4
+        with:
+          name: lume-macos-universal-unsigned-candidate-${{ github.run_id }}
+          path: |
+            work/macos-universal-transfer/Lume.app.zip
+            work/macos-universal-transfer/Lume.app.zip.sha512
+            work/desktop-qa/
+          if-no-files-found: error
+          retention-days: 1
+
+  universal-unsigned-intel:
+    name: Provar universal sem assinatura no Intel
+    needs: universal-unsigned
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    env:
+      TMPDIR: /private/tmp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: lume-macos-universal-unsigned-candidate-${{ github.run_id }}
+          path: work/universal-unsigned-download
+      - name: Executar exatamente o aplicativo universal recebido
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "x86_64"
+          node -e "if(process.platform!=='darwin'||process.arch!=='x64')process.exit(1)"
+          (cd work/universal-unsigned-download/macos-universal-transfer && shasum -a 512 -c Lume.app.zip.sha512)
+          ditto -x -k work/universal-unsigned-download/macos-universal-transfer/Lume.app.zip "$RUNNER_TEMP"
+          app="$RUNNER_TEMP/Lume.app"
+          arches=" $(lipo -archs "$app/Contents/MacOS/Lume") "
+          [[ "$arches" == *" arm64 "* ]]
+          [[ "$arches" == *" x86_64 "* ]]
+          node test/macos-universal-native.mjs --app "$app" --architecture x64
+          ASSESSOR_TEST_EXECUTABLE="$app/Contents/MacOS/Lume" npm run test:desktop
+          mv work/desktop-qa/evidence.json work/desktop-qa/evidence-universal-x64.json
+      - name: Guardar prova universal das duas arquiteturas
+        uses: actions/upload-artifact@v4
+        with:
+          name: lume-macos-universal-unsigned-${{ github.run_id }}
+          path: |
+            work/universal-unsigned-download/desktop-qa/
+            work/universal-unsigned-download/macos-universal-transfer/Lume.app.zip.sha512
+            work/desktop-qa/
+          if-no-files-found: error
+          retention-days: 3
+
+  signed-universal:
+    name: Gerar DMG universal assinado no Apple Silicon
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.signed_build }}
+    needs: universal-unsigned-intel
+    runs-on: macos-15
+    timeout-minutes: 60
+    environment: macos-signing
+    env:
+      TMPDIR: /private/tmp
+      CSC_LINK: ${{ secrets.MAC_CERTIFICATE_P12_BASE64 }}
+      CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+      APPLE_API_KEY_ID: ${{ secrets.MAC_NOTARIZATION_KEY_ID }}
+      APPLE_API_ISSUER: ${{ secrets.MAC_NOTARIZATION_ISSUER_ID }}
+      MAC_NOTARIZATION_API_KEY_BASE64: ${{ secrets.MAC_NOTARIZATION_API_KEY_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Preparar credenciais sem exibir valores
+        shell: bash
+        run: |
+          set -euo pipefail
+          for value in "$CSC_LINK" "$CSC_KEY_PASSWORD" "$APPLE_API_KEY_ID" "$APPLE_API_ISSUER" "$MAC_NOTARIZATION_API_KEY_BASE64"; do
+            if [[ -z "$value" ]]; then echo "As cinco credenciais do ambiente macos-signing são obrigatórias." >&2; exit 1; fi
+          done
+          key="$RUNNER_TEMP/AuthKey_${APPLE_API_KEY_ID}.p8"
+          printf '%s' "$MAC_NOTARIZATION_API_KEY_BASE64" | base64 --decode > "$key"
+          chmod 600 "$key"
+          echo "APPLE_API_KEY=$key" >> "$GITHUB_ENV"
+      - run: npm run desktop:mac:check -- --universal
+      - name: Preparar dependências nativas das duas arquiteturas
+        run: npm run desktop:deps:mac:universal
+      - name: Gerar e notarizar pacote universal
+        run: npm run desktop:build:mac -- --universal
+      - name: Verificar as duas fatias, assinatura, Gatekeeper e ticket
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="dist/desktop/mac-universal/Lume.app"
+          arches=" $(lipo -archs "$app/Contents/MacOS/Lume") "
+          [[ "$arches" == *" arm64 "* ]]
+          [[ "$arches" == *" x86_64 "* ]]
+          codesign --verify --deep --strict --verbose=2 "$app"
+          spctl --assess --type execute --verbose=2 "$app"
+          xcrun stapler validate "$app"
+      - name: Auditar conteúdo universal
+        env:
+          ASSESSOR_PACKAGE_PLATFORM: darwin
+          ASSESSOR_PACKAGE_ARCH: universal
+        run: node test/desktop-package.mjs
+      - name: Executar fatia arm64 do aplicativo universal
+        env:
+          ASSESSOR_TEST_EXECUTABLE: dist/desktop/mac-universal/Lume.app/Contents/MacOS/Lume
+        run: |
+          test "$(uname -m)" = "arm64"
+          node test/macos-universal-native.mjs --app dist/desktop/mac-universal/Lume.app --architecture arm64
+          npm run test:desktop
+          mv work/desktop-qa/evidence.json work/desktop-qa/evidence-arm64.json
+      - name: Transferir candidato exato para prova Intel
+        uses: actions/upload-artifact@v4
+        with:
+          name: lume-macos-universal-candidate-${{ github.run_id }}
+          path: |
+            dist/desktop/Lume-*-mac-universal.dmg
+            work/desktop-qa/
+          if-no-files-found: error
+          retention-days: 1
+
+  signed-intel-verification:
+    name: Provar DMG universal nativamente no Intel
+    needs: signed-universal
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: lume-macos-universal-candidate-${{ github.run_id }}
+          path: .
+      - name: Verificar e abrir a fatia x64 assinada
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "x86_64"
+          node -e "if(process.arch!=='x64')process.exit(1)"
+          dmg="$(find dist/desktop -maxdepth 1 -name 'Lume-*-mac-universal.dmg' -print -quit)"
+          test -n "$dmg"
+          mount="$RUNNER_TEMP/lume-universal"
+          mkdir -p "$mount"
+          hdiutil attach -nobrowse -readonly -mountpoint "$mount" "$dmg"
+          trap 'hdiutil detach "$mount" >/dev/null 2>&1 || true' EXIT
+          ditto "$mount/Lume.app" "$RUNNER_TEMP/Lume.app"
+          hdiutil detach "$mount"
+          trap - EXIT
+          app="$RUNNER_TEMP/Lume.app"
+          arches=" $(lipo -archs "$app/Contents/MacOS/Lume") "
+          [[ "$arches" == *" arm64 "* ]]
+          [[ "$arches" == *" x86_64 "* ]]
+          codesign --verify --deep --strict --verbose=2 "$app"
+          spctl --assess --type execute --verbose=2 "$app"
+          xcrun stapler validate "$app"
+          node test/macos-universal-native.mjs --app "$app" --architecture x64
+          ASSESSOR_TEST_EXECUTABLE="$app/Contents/MacOS/Lume" npm run test:desktop
+          mv work/desktop-qa/evidence.json work/desktop-qa/evidence-x64.json
+      - name: Guardar DMG aprovado nas duas arquiteturas
+        uses: actions/upload-artifact@v4
+        with:
+          name: lume-macos-universal-${{ github.run_id }}
+          path: |
+            dist/desktop/Lume-*-mac-universal.dmg
+            work/desktop-qa/
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,13 @@
+{
+  "schema": "lume-laya-annotations-v1",
+  "purpose": "local-model-improvement",
+  "dataKind": "synthetic",
+  "reviewedAt": "2026-09-25T12:00:00.000Z",
+  "approvedByOwner": true,
+  "items": [
+    {"id":"ex001","personKey":"p001","conversationKey":"c001","channel":"dm","author":"other","text":"Confirme a data da reunião.","critical":false,"risks":["none"],"actions":[{"type":"request","span":"Confirme a data da reunião."}],"rightsConfirmed":true},
+    {"id":"ex002","personKey":"p002","conversationKey":"c002","channel":"dm","author":"self","text":"Vou enviar o resumo amanhã.","critical":false,"risks":["none"],"actions":[{"type":"promise","span":"Vou enviar o resumo amanhã."}],"rightsConfirmed":true},
+    {"id":"ex003","personKey":"p003","conversationKey":"c003","channel":"group","author":"third_party","text":"A equipe terminou a apresentação.","critical":false,"risks":["completed"],"actions":[],"rightsConfirmed":true},
+    {"id":"ex004","personKey":"p004","conversationKey":"c004","channel":"dm","author":"other","text":"Confira o extrato antes de registrar como pago.","critical":true,"risks":["payment","condition"],"actions":[{"type":"request","span":"Confira o extrato antes de registrar como pago."}],"rightsConfirmed":true}
+  ]
+}

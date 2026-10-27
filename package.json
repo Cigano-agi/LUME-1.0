@@ -1,0 +1,230 @@
+{
+  "name": "assessor-2.0",
+  "version": "3.2.0-beta.8",
+  "private": true,
+  "main": "desktop/main.cjs",
+  "author": "ReadyWorks",
+  "type": "module",
+  "description": "Lume — clareza para o próximo passo. Memória pessoal com fontes, contexto e ações.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "postinstall": "node scripts/patch-baileys-companion-refresh.mjs",
+    "desktop": "electron .",
+    "desktop:build": "electron-builder --win nsis --x64 --publish never",
+    "desktop:pack": "electron-builder --dir --win --x64",
+    "desktop:pack:mac:ci": "electron-builder --dir --mac --arm64 --publish never --config.mac.identity=null --config.mac.forceCodeSigning=false --config.mac.notarize=false",
+    "test:desktop": "node test/desktop.e2e.mjs",
+    "test": "node --test \"test/*.test.js\"",
+    "saude": "node bin/assessor.js saude",
+    "vigia": "node bin/assessor.js vigia",
+    "start": "node bin/app.js",
+    "crm": "node bin/crm.js",
+    "backlog": "node bin/backlog.js",
+    "publicar": "node bin/publicar-vault.js",
+    "ingerir": "node bin/crm.js --lote 10 --dm && node bin/publicar-vault.js && node bin/rascunho.js && node bin/backlog.js && npm run indexar",
+    "indexar": "node bin/reindexar.js",
+    "diagnostico": "node bin/diagnostico.js",
+    "criar-vault": "node bin/criar-vault.js",
+    "instalar": "powershell -ExecutionPolicy Bypass -File instalar.ps1",
+    "desktop:build:mac": "node desktop/build-mac.mjs",
+    "desktop:mac:check": "node desktop/build-mac.mjs --check",
+    "desktop:deps:mac:universal": "node scripts/prepare-macos-universal-deps.mjs",
+    "assets:motion": "node desktop/preparar-motion.mjs",
+    "central:migrate": "node scripts/central-migrar.mjs",
+    "central:preflight": "node scripts/central-operacao.mjs preflight",
+    "central:smoke": "node scripts/central-operacao.mjs smoke",
+    "central:invite": "node scripts/central-operacao.mjs invite",
+    "central:invite:revoke": "node scripts/central-operacao.mjs invite-revoke",
+    "central:retention": "node scripts/central-operacao.mjs retention",
+    "release:preflight": "node scripts/release-readiness.mjs --mode candidate",
+    "release:candidate": "node scripts/construir-candidato.mjs",
+    "release:candidate:laya": "node scripts/build-laya-bundled.mjs",
+    "release:prepare": "node scripts/preparar-release.mjs",
+    "release:proof": "node scripts/release-readiness.mjs",
+    "mcp:pack": "node scripts/build-lume-mcpb.mjs",
+    "comunicados:assinar": "node scripts/comunicados-assinar.mjs",
+    "broker:acl:build": "node scripts/build-broker-acl.mjs",
+    "audio:local:build": "node scripts/build-audio-local.mjs"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "4.3.0",
+    "@neondatabase/serverless": "^1.0.0",
+    "@peculiar/x509": "2.1.0",
+    "@whiskeysockets/baileys": "7.0.0-rc14",
+    "electron-updater": "6.8.9",
+    "js-yaml": "4.3.2",
+    "motion": "13.4.0",
+    "onnxruntime-node": "1.23.2",
+    "pdfjs-dist": "6.4.299",
+    "pino": "9.14.0",
+    "qrcode": "1.5.4",
+    "reflect-metadata": "0.2.2"
+  },
+  "optionalDependencies": {
+    "@img/sharp-darwin-arm64": "0.35.4",
+    "@img/sharp-darwin-x64": "0.35.4",
+    "@img/sharp-libvips-darwin-arm64": "1.3.3",
+    "@img/sharp-libvips-darwin-x64": "1.3.3"
+  },
+  "build": {
+    "appId": "com.readyworks.assessor",
+    "productName": "Lume",
+    "extraMetadata": {
+      "version": "3.2.0-beta.8"
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://lume.gypsiventures.com/releases/beta"
+      }
+    ],
+    "directories": {
+      "output": "dist/desktop"
+    },
+    "files": [
+      "desktop/main.cjs",
+      "desktop/companheiro-window.cjs",
+      "desktop/companheiro-preload.cjs",
+      "desktop/companheiro.html",
+      "desktop/companheiro.css",
+      "desktop/companheiro.js",
+      "desktop/audio-converter.cjs",
+      "desktop/chatgpt-links.cjs",
+      "desktop/sac-fallback.cjs",
+      "desktop/maintenance-controller.cjs",
+      "desktop/maintenance.html",
+      "desktop/maintenance.css",
+      "desktop/utility-lifecycle.cjs",
+      "desktop/utility-receipt.js",
+      "desktop/atualizacoes.cjs",
+      "desktop/atualizacoes-ponte.js",
+      "desktop/central-pulso.cjs",
+      "desktop/central-runtime.cjs",
+      "desktop/origem-lume.cjs",
+      "desktop/central-ponte.js",
+      "desktop/comunicados-policy.json",
+      "desktop/audio-local-policy.json",
+      "desktop/release-policy.json",
+      "desktop/segredos.cjs",
+      "desktop/downloads.cjs",
+      "desktop/notificacoes.cjs",
+      "desktop/lembretes-ponte.js",
+      "desktop/service.js",
+      "desktop/encerramento.js",
+      "desktop/icon.png",
+      "mcpb/lume/**/*",
+      "scripts/build-lume-mcpb.mjs",
+      "scripts/release-version.mjs",
+      "scripts/version-contract.mjs",
+      "src/**/*.js",
+      "src/painel/app.html",
+      "src/painel/app.css",
+      "src/painel/beta.html",
+      "src/painel/beta.css",
+      "package.json",
+      "src/painel/onboarding.css",
+      "src/painel/atualizacoes.js",
+      "src/painel/lume.css",
+      "src/painel/vendor/motion-LICENSE.md",
+      "src/painel/workspace.css",
+      "src/painel/lume-theme.css",
+      "src/painel/lume-features.css",
+      "src/painel/fonts/**/*",
+      "src/painel/beta05.css",
+      "src/painel/acoes.css",
+      "src/painel/telegram.css",
+      "src/painel/pessoal-experiencia.css",
+      "src/painel/lume-identidade.css",
+      "src/painel/experiencia.css",
+      "src/painel/lume-vivo-icons.svg",
+      "src/painel/lume-icon.svg",
+      "src/painel/lume-dark.css",
+      "src/painel/lume-theme-mode.js",
+      "src/laya/vendor/LICENSE",
+      "desktop/identidade.cjs",
+      "desktop/icon.svg",
+      "!src/painel/apresentacao.html",
+      "!src/painel/lume-site.js",
+      "!src/execucao/codex-runner.js",
+      "!src/execucao/jobs.js",
+      "src/painel/lume-soft-mascote.css"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "native/win-acl/bin/lume-acl.exe",
+      "native/win-acl/bin/manifest.json",
+      "native/app-activity/bin/lume-activity.exe",
+      "native/app-activity/bin/manifest.json"
+    ],
+    "beforePack": "scripts/broker-acl-before-pack.cjs",
+    "npmRebuild": false,
+    "win": {
+      "target": "nsis",
+      "extraResources": [
+        {
+          "from": "native/audio-local/bin",
+          "to": "audio-local",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ],
+      "files": [
+        "native/win-acl/bin/lume-acl.exe",
+        "native/win-acl/bin/manifest.json",
+        "!**/onnxruntime-node/bin/napi-v6/darwin/**",
+        "!**/onnxruntime-node/bin/napi-v6/linux/**",
+        "!**/@img/*darwin*/**",
+        "!**/@img/*linux*/**",
+        "native/app-activity/bin/lume-activity.exe",
+        "native/app-activity/bin/manifest.json"
+      ],
+      "icon": "desktop/icon.ico",
+      "artifactName": "Lume-${version}-win-${arch}-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "desktop/icon.icns",
+      "artifactName": "Lume-${version}-mac-${arch}.${ext}",
+      "hardenedRuntime": true,
+      "notarize": true,
+      "entitlements": "desktop/entitlements.mac.plist",
+      "entitlementsInherit": "desktop/entitlements.mac.plist",
+      "singleArchFiles": "node_modules/{@img/{sharp,sharp-libvips}-darwin-*,onnxruntime-node/bin/napi-v6/darwin/*,@huggingface/transformers/node_modules/onnxruntime-node/bin/napi-v6/darwin/*}/**/*",
+      "x64ArchFiles": "Contents/Resources/app.asar.unpacked/node_modules/{@img/{sharp,sharp-libvips}-darwin-*,onnxruntime-node/bin/napi-v6/darwin/*,@huggingface/transformers/node_modules/onnxruntime-node/bin/napi-v6/darwin/*}/**/*",
+      "forceCodeSigning": true
+    }
+  },
+  "overrides": {
+    "@huggingface/transformers": {
+      "onnxruntime-node": "1.23.2"
+    },
+    "adm-zip": "0.6.1"
+  },
+  "devDependencies": {
+    "@vercel/blob": "^2.8.0",
+    "electron": "44.4.1",
+    "electron-builder": "26.15.3",
+    "playwright": "1.58.2"
+  },
+  "lume": {
+    "nome": "Lume",
+    "versaoComercial": "1.0",
+    "cor": "#F4CE46"
+  }
+}

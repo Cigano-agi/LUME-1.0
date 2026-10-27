@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lume · revisão local · ensaio sintético</title>
+  <link rel="stylesheet" href="/lume-theme.css"><link rel="stylesheet" href="/lume-dark.css"><link rel="stylesheet" href="/notetaker.css">
+  <style>html,body{margin:0}.qa-ribbon{padding:8px 18px;background:#292820;color:#fff5cf;text-align:center;font:700 11px/1.4 Manrope,Segoe UI,sans-serif;letter-spacing:.08em}#review[hidden],#view[hidden]{display:none}</style>
+</head>
+<body>
+  <div class="qa-ribbon">ENSAIO LOCAL · WAV E ASR SINTÉTICOS · SEM DADOS DE PESSOAS</div>
+  <div id="view"></div><div id="review" hidden></div>
+  <script type="module">
+    import {montarVista} from '/notetaker-view.js';
+    import {montarRevisaoTrecho} from '/notetaker-revisao.js';
+    const trechoId=new URL(location.href).searchParams.get('trecho');
+    const token=(await (await fetch('/api/sessao')).json()).token;
+    const path=`/api/v3/notetaker/trechos/${trechoId}`;
+    const first=await (await fetch(path,{headers:{'x-assessor-token':token}})).json();
+    const viewNode=document.getElementById('view'),reviewNode=document.getElementById('review');
+    window.saved=[];window.closedCalls=[];
+    let holdNext=false,releaseHeld;
+    window.holdNextResponse=()=>{holdNext=true;window.releaseHeldResponse=()=>releaseHeld?.();};
+    let review,denied=false;
+    const snapshot=d=>({id:'sessao-sintetica',estado:'revisavel',titulo:'Reunião sintética de QA',fonte:{disponivel:d.evidencia.estado==='integra',persistida:true},transcricaoConfirmada:true,trechos:[{id:d.id,inicio:'00:00',fim:'00:01',texto:d.textoExibido,correcao:d.textoCorrigido,coberto:true,podeCorrigir:true}]});
+    const view=montarVista(viewNode,snapshot(first),{corrigir:({trechoId:id})=>window.openReview(id)});
+    window.openReview=id=>{
+      if(denied)return;
+      const trigger=document.activeElement;
+      viewNode.hidden=true;reviewNode.hidden=false;
+      review=montarRevisaoTrecho(reviewNode,{trechoId:id,obterToken:()=>token,
+        fetchImpl:async(...args)=>{const response=await fetch(...args);if(holdNext){holdNext=false;await new Promise(resolve=>{releaseHeld=resolve;});releaseHeld=null;}return response;},
+        onSaved:d=>{window.saved.push(d);view.atualizar(snapshot(d));},
+        onClose:info=>{window.closedCalls.push(info);if(info.motivo==='indisponivel'){denied=true;view.destruir();viewNode.replaceChildren();viewNode.hidden=true;return;}review?.destruir();reviewNode.hidden=true;if(denied){viewNode.textContent='Trecho indisponível.';viewNode.hidden=false;viewNode.tabIndex=-1;viewNode.focus();return;}viewNode.hidden=false;trigger?.focus();}});
+    };
+    window.destroyReview=()=>review?.destruir();
+    window.setTheme=theme=>document.documentElement.dataset.theme=theme;
+  </script>
+</body>
+</html>

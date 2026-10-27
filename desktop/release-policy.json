@@ -1,0 +1,6 @@
+{
+  "schema": "lume-release-v1",
+  "enabled": false,
+  "channel": "beta",
+  "feedUrl": null
+}

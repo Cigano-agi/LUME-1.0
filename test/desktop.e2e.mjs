@@ -1,0 +1,107 @@
+// Prova do fluxo real numa janela Electron, com perfil temporário e sem WhatsApp.
+import { _electron as electron } from 'playwright';
+import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve, join } from 'node:path';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import pacote from '../package.json' with { type: 'json' };
+// O broker confere a ACL dos ancestrais; no Windows, Temp não representa o
+// diretório protegido do perfil instalado e recusa o boot antes de abrir a UI.
+const profileRoot = process.platform === 'win32' ? process.env.APPDATA : tmpdir();
+if (!profileRoot) throw new Error('APPDATA indisponível para o perfil de ensaio.');
+const profile = mkdtempSync(join(profileRoot, 'assessor-desktop-qa-'));
+const output = resolve('work/desktop-qa'); mkdirSync(output, { recursive: true });
+const options = { env: { ...process.env, ASSESSOR_DESKTOP_TEST_PROFILE: profile }, timeout: 30000 };
+if (process.env.ASSESSOR_TEST_EXECUTABLE) options.executablePath = process.env.ASSESSOR_TEST_EXECUTABLE;
+else options.args = [resolve('.')];
+let application;
+const errors = [];
+try {
+  application = await electron.launch(options);
+  application.process().stderr.on('data', text => { if (/Error|ERR_|SyntaxError/.test(String(text))) errors.push(String(text)); });
+  const page = await application.firstWindow();
+  assert.equal(await page.locator('.welcome-art .pill').innerText(),'BETA 0.6');
+  page.on('pageerror', error => errors.push(error.message));
+  await page.locator('#owner').waitFor();
+  await page.screenshot({ path: join(output, '01-onboarding.png') });
+  await page.locator('#owner').fill('Beta de teste');
+  await page.locator('#consent').check();
+  await page.getByRole('button', { name: 'Preparar meu espaço' }).click();
+  if (process.env.ASSESSOR_TEST_QR === '1') {
+    await page.getByRole('button', { name: 'Gerar QR code' }).click();
+    await page.locator('#qr').waitFor({ state: 'visible', timeout: 45000 });
+    await page.waitForFunction(() => document.getElementById('qr').naturalWidth > 0);
+    // Não salvar QR/sessão em evidências e não parear conta real.
+    await page.evaluate(async () => { const { token } = await (await fetch('/api/sessao')).json(); await fetch('/api/desconectar', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Assessor-Token': token }, body: '{}' }); });
+  }
+  await page.getByRole('button', { name: 'Explorar meu espaço primeiro' }).click();
+  await page.waitForFunction(() => document.getElementById('stat-messages')?.textContent === '0');
+  await page.screenshot({ path: join(output, '02-hoje-vazio.png') });
+  await page.locator('nav [data-view=settings]').click();
+   await page.locator('#settings-choice-work').click();
+  await page.locator('#ia-key-status').filter({ hasText: 'A chave será guardada' }).waitFor();
+  const syntheticKey = 'somente_teste_local_nao_enviar_123456789';
+  await page.locator('#ia-key').fill(syntheticKey);
+  await page.locator('#ia-enabled').check();
+  await page.locator('#ia-ack').check();
+  await page.locator('#ia-config-form button.primary').click();
+  await page.locator('#ia-key-status').filter({ hasText: 'Chave guardada' }).waitFor();
+  assert.equal(readFileSync(join(profile,'credenciais','gemini.seguro')).includes(Buffer.from(syntheticKey)), false);
+  assert.equal(await page.locator('#ia-key').inputValue(), '');
+  await page.locator('#note-title').fill('Decisão do beta');
+  await page.locator('#note-text').fill('Revisar instalação com os sócios na sexta. Fonte criada somente para QA. <script>alert(1)</script>');
+  await page.getByRole('button', { name: 'Guardar nota' }).click();
+  await page.getByRole('status').filter({ hasText: 'Ideia guardada' }).waitFor();
+  await page.locator('nav [data-view=memory]').click();
+  await page.locator('#memory-mode-search').click();
+  await page.locator('#search').fill('sócios');
+  await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+  await page.locator('#results .source').waitFor();
+  assert.match(await page.locator('#results').innerText(), /Fonte criada somente para QA/);
+  assert.equal(await page.locator('#results script').count(), 0);
+  await page.screenshot({ path: join(output, '03-memoria.png') });
+  await page.locator('nav [data-view=graph]').click();
+  await page.locator('#graph-list button').first().waitFor();
+  await page.screenshot({ path: join(output, '04-grafo.png') });
+  await page.locator('#graph-list button').first().click();
+    await page.locator('#graph-selection').getByRole('button',{name:'Abrir conversa',exact:true}).click();
+  await page.locator('#conversation-heading').waitFor();
+  const mcpDownload = await page.evaluate(async () => {
+    const { token } = await (await fetch('/api/sessao')).json();
+    const headers = { 'Content-Type': 'application/json', 'X-Assessor-Token': token };
+    const activation = await fetch('/api/v3/mcp/ativar-claude', { method: 'POST', headers, body: JSON.stringify({ confirmar: true }) });
+    const response = await fetch('/api/v3/mcp/pacote', { headers: { 'X-Assessor-Token': token } });
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    return { activationStatus: activation.status, status: response.status, disposition: response.headers.get('content-disposition'), magic: Array.from(bytes.slice(0, 4)), bytes: bytes.length };
+  });
+  assert.equal(mcpDownload.activationStatus, 200);assert.equal(mcpDownload.status, 200);
+  assert.equal(mcpDownload.disposition, `attachment; filename="Lume-${pacote.version}.mcpb"`);
+  assert.deepEqual(mcpDownload.magic, [0x50,0x4b,0x03,0x04]);assert.ok(mcpDownload.bytes>1000);
+  const runtime = await application.evaluate(({ app }) => ({ version: app.getVersion(), node: process.versions.node, electron: process.versions.electron, data: app.getPath('userData') }));
+  assert.equal(runtime.data, profile);
+  const browserSecurity = await page.evaluate(() => ({ require: typeof window.require, node: typeof window.process }));
+  assert.deepEqual(browserSecurity, { require: 'undefined', node: 'undefined' });
+  const second = spawn(application.process().spawnfile, application.process().spawnargs.slice(1), { env: options.env, windowsHide: true, stdio: 'ignore' });
+  await once(second, 'exit', { signal: AbortSignal.timeout(15000) });
+  assert.equal(application.windows().length, 1);
+  await page.setViewportSize({ width: 820, height: 700 });
+  await page.locator('nav [data-view=today]').click();
+  await page.screenshot({ path: join(output, '05-janela-estreita.png') });
+  await application.close(); application = null;
+  application = await electron.launch(options);
+  const reopened = await application.firstWindow();
+  await reopened.locator('#workspace').waitFor();
+  await reopened.waitForFunction(() => document.getElementById('stat-messages')?.textContent === '1');
+  assert.equal(await reopened.locator('#onboarding').isVisible(), false);
+  await reopened.locator('nav [data-view=settings]').click();
+   await reopened.locator('#settings-choice-work').click();
+  await reopened.locator('#ia-key-status').filter({ hasText: 'Chave guardada' }).waitFor();
+  await reopened.locator('#ia-remove-key').click();
+  await reopened.locator('#ia-key-status').filter({ hasText: 'A chave será guardada' }).waitFor();
+  assert.equal(await reopened.locator('#ia-enabled').isChecked(), false);
+  writeFileSync(join(output, 'evidence.json'), JSON.stringify({ runtime, browserSecurity, profile, qrVerified: process.env.ASSESSOR_TEST_QR === '1', mcpDownload, errors, checks: ['onboarding', 'empty state', 'note persistence', 'literal XSS rendering', 'search', 'graph to source', 'MCP activation and package download', 'single instance', '820px layout', 'restart persistence'] }, null, 2));
+  assert.deepEqual(errors, []);
+  console.log('DESKTOP_E2E_OK', JSON.stringify(runtime));
+} finally { if (application) await application.close(); }

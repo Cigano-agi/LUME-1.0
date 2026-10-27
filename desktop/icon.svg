@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 256 256">
+<title>Lume ? mem?ria com luz</title>
+<defs><linearGradient id="yellow" x2=".8" y2="1"><stop stop-color="#ffe67d"/><stop offset="1" stop-color="#efc53b"/></linearGradient><linearGradient id="body" x2=".7" y2="1"><stop stop-color="#fff9d7"/><stop offset="1" stop-color="#f2d56e"/></linearGradient></defs>
+<rect width="256" height="256" rx="58" fill="url(#yellow)"/>
+<ellipse cx="120" cy="217" rx="67" ry="9" fill="#80631c" opacity=".15"/>
+<path d="M67 125C40 114 33 127 47 141L68 151M176 128C195 113 210 124 198 138L179 149" fill="#f9e49c" stroke="#b39542" stroke-width="2"/>
+<path d="M57 120C54 72 79 43 120 43C161 43 186 73 184 117L185 181C187 204 172 215 159 201C153 194 149 198 142 204C132 215 124 211 118 204C111 195 106 199 99 205C86 216 79 205 75 202C64 215 52 206 54 191Z" fill="url(#body)" stroke="#d8b847" stroke-width="2"/>
+<path d="M74 96C78 73 92 60 111 59" fill="none" stroke="#fffef1" stroke-width="7" stroke-linecap="round" opacity=".8"/>
+<g fill="#3c4329"><ellipse cx="99" cy="119" rx="7" ry="10"/><ellipse cx="144" cy="117" rx="7" ry="10"/></g>
+<g fill="#fffef1"><circle cx="101" cy="116" r="2"/><circle cx="146" cy="114" r="2"/></g>
+<path d="M110 145Q122 155 134 143" fill="none" stroke="#615735" stroke-width="4" stroke-linecap="round"/>
+<path d="M192 161V151C192 139 209 139 209 151V161" fill="none" stroke="#705022" stroke-width="4"/>
+<rect x="184" y="158" width="34" height="43" rx="10" fill="#ae7a25" stroke="#705022" stroke-width="2"/>
+<rect x="191" y="164" width="20" height="27" rx="6" fill="#fff5b0"/>
+<path d="M189 195H213" stroke="#715225" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,8 @@
+{
+  "versao": 1,
+  "pacotes": {
+    "win32-x64": {
+      "manifestoSha256": "2baea51518113a2d07052162e3ec30a8c8fcf9e94a913ac3d0d855cc6a526b15"
+    }
+  }
+}

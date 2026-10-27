@@ -1,0 +1,30 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { get } from 'node:http';
+import { abrirBanco } from '../src/banco.js';
+import { criarServidor } from '../src/painel/servidor.js';
+
+test('API local protege mutações e persiste contexto sem expor bruto',async(t)=>{
+  const db=abrirBanco(); let iniciou=0;
+  const conexao={estado:()=>({estado:'desconectada',qr:null}),iniciar:async()=>{iniciou++;},parar:async()=>{}};
+  const servidor=criarServidor(db,{conexao});
+  await new Promise(r=>servidor.listen(0,'127.0.0.1',r));
+  t.after(async()=>{await new Promise(r=>servidor.close(r));db.close();});
+  const base=`http://127.0.0.1:${servidor.address().port}`;
+  const {token}=await (await fetch(base+'/api/sessao')).json();
+  assert.equal((await fetch(base+'/api/notas',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"texto":"teste"}'})).status,403);
+  const headers={'Content-Type':'application/json','X-Assessor-Token':token};
+  assert.equal((await fetch(base+'/api/notas',{method:'POST',headers:{...headers,Origin:'https://evil.example'},body:'{"texto":"teste"}'})).status,403);
+  const res=await fetch(base+'/api/notas',{method:'POST',headers,body:JSON.stringify({texto:'Contexto verificado',titulo:'Teste'})});
+  assert.equal(res.status,201);
+  const estado=await (await fetch(base+'/api/estado')).json();assert.equal(estado.total,1);
+  const conversas=await (await fetch(base+'/api/conversas?q=verificado')).json();assert.equal(conversas.length,1);
+  const mensagens=await (await fetch(base+'/api/mensagens?conversaId='+encodeURIComponent(conversas[0].id))).json();
+  assert.equal(mensagens.mensagens[0].texto,'Contexto verificado');assert.equal(mensagens.mensagens[0].bruto,undefined);
+  assert.equal((await fetch(base+'/api/mensagens?antes=nope')).status,400);
+  assert.equal((await fetch(base+'/api/grupos')).status,200);
+  await fetch(base+'/api/conectar',{method:'POST',headers,body:'{}'}); assert.equal(iniciou,1);
+  assert.equal((await fetch(base+'/data/wa-auth/creds.json')).status,404);
+  const status=await new Promise((resolve,reject)=>get(base+'/api/estado',{headers:{Host:'evil.example'}},r=>{r.resume();resolve(r.statusCode);}).on('error',reject));
+  assert.equal(status,403);
+});

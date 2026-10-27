@@ -1,0 +1,62 @@
+# Revisão independente — presença suave e atividade local
+
+27/10/2026. Território desta revisão: testes independentes e este documento. Nenhuma fonte do produto alterada, nenhum perfil pessoal aberto e nenhum coletor real executado pelo revisor. Contrato: [CONTRATO.md](CONTRATO.md); critérios: [DONE.md](../../DONE.md). Os gates anteriores de qualidade semântica, conexão, plataformas, hardware e aceite permanecem separados.
+
+## Arquitetura e limites
+
+O tracking reutiliza `assessor.db`, `desktop_config`, o servidor protegido e o encerramento coordenado do desktop. `atividade_apps_dias` contém agregados diários por basename do executável, duração estimada, contagem e atualização. Não usa `eventos`/`etapas` de conversas nem cria fila. Consentimento, pausa e exclusões são próprios; a central técnica remota não recebe atividade. O catálogo de backup de acervo declara a tabela como `X`: esse backup não constitui recuperação dos registros de tracking.
+
+O C# inspecionado consulta desktop de entrada, ociosidade e processo da janela em primeiro plano. Não chama APIs de texto de janela, URL, screenshot, comandos ou hooks de entrada. O caminho completo obtido pela API é reduzido a basename dentro do helper. O runtime exige manifesto fechado, hash e arquivo regular; executa uma amostra por helper com limite de saída/tempo, sem shell e sem janela. A leitura de código não comprova cobertura nativa ou desempenho.
+
+O domínio exige duas amostras próximas do mesmo aplicativo; lacunas, mudança de dia, suspensão/bloqueio, resposta inválida e geração revogada impedem continuidade. O resultado representa estimativa amostrada, não atenção, produtividade ou assunto. Consentimento desconhecido falha desligado; configuração inválida é recusada.
+
+## Achados reproduzidos
+
+| ID | Prova | Situação |
+| --- | --- | --- |
+| A01 | Runtime aceitava EXE com hardlink, embora o builder o rejeitasse. Arquivo sintético não executável e manifesto coerente resultaram em `disponivel:true`. | Corrigido pela coordenação com `nlink===1` em EXE/manifesto. Teste independente passou após a correção; RED preservado. |
+| A02 | Após exclusão completa por `/dados/excluir`, tabela/configuração eram removidas do banco, mas o objeto de atividade conservava `habilitado:true` e `consentimento:1` em memória. | Corrigido pela coordenação: operações de dados desabilitam e revogam consentimento antes de aguardar o coletor. Purge completo e impossibilidade de reativar sem novo consentimento passaram independentemente. RED preservado. |
+
+A integridade do helper também passou a ser conferida antes de cada execução. O teste altera bytes após construir o coletor e intercepta `execFile`: o arquivo é recusado antes de qualquer chamada ao processo. Não foi executado arquivo sintético ou helper real.
+
+## Provas deste corte
+
+`test/lume-soft-atividade-review.test.js` cobre consentimento, configuração estrita, amostragem, concorrência, exclusão e pausa em voo, pausa seguida de retomada, relógios, reinício, retenção desligada, falha de persistência, lifecycle, identificadores, fronteira nativa e API. O corte inicial teve 13/14 com A01; após sua correção e ampliação, 18/19 com A02. Logs privados: `work/lume-soft-20261027/atividade-review-red.txt` e `atividade-review-integration.txt`. As execuções com falha não são declaradas aprovadas.
+
+Após a correção de A02 e inclusão da separação entre direitos de conversas e tracking: **20/20, saída zero**, 644,179 ms, `atividade-review-green.txt`. A decisão de tornar `pausarDados` uma revogação foi explícita da coordenação; a expectativa foi atualizada e fortalecida com consentimento zero, patch de pausa incapaz de reativar e rejeição de habilitação sem confirmação nova. Exclusão de fonte preserva o agregado independente, mas desliga a coleta. Exportação legível não inclui nomes/dados do tracking e o catálogo de backup declara sua exclusão. GET exige token e origem local; consultas/corpos inesperados e POST em modo somente leitura são recusados.
+
+O builder `scripts/build-app-activity.mjs` foi lido e seus sete testes repetidos independentemente: **7/7, saída zero**, log `atividade-build-review.txt`. Verifica compilador por SHA256, fonte, binário/manifesto, links, pares incompletos, plataforma e arquitetura. A exceção de múltiplos hardlinks vale somente para o compilador Microsoft fixado por hash; fonte e artefatos mantêm um link. Nenhuma compilação foi feita pelo revisor. As substituições do par EXE/manifesto são sequenciais: interrupção entre elas produz par inválido e recusa posterior, sem garantia de publicação atômica do par.
+
+## Integração, restauração e encerramento
+
+A ampliação independente terminou **22/22, saída zero**, 16.022,522 ms, no log `atividade-review-roundtrip.txt`. O roundtrip usa HTTP e o formato criptografado real: cria `.lumebak`, baixa, importa e restaura em perfil novo dentro da raiz temporária do teste. A conversa sintética reaparece; os agregados de atividade não entram no destino e a configuração de consentimento não é transportada. Construir o domínio sobre o banco restaurado resulta em `habilitado:false`, consentimento zero e nenhuma chamada ao coletor. A origem conserva sua escolha e seus agregados, coerentemente com a restauração v10 em outro perfil. Não foi usado perfil pessoal nem senha real.
+
+O teste de encerramento do adaptador intercepta `execFile`, verifica argumentos, janela oculta, timeout e limite de saída. Após abort, `kill` é solicitado, mas uma consulta seguinte continua recusada até o callback de fechamento; o retorno cancelado é descartado. Só então um novo helper pode começar. Essa prova controla eventos do processo e não executa o helper real.
+
+Leitura integrada de `desktop/main.cjs` e `desktop/service.js`: o domínio inicia suspenso; a geração pronta recebe estado do sistema, eventos de bloqueio/suspensão invalidam a continuidade e o helper nativo verifica desktop/ociosidade independentemente. O corte de produtores encerra o domínio, aborta coleta e registra sua drenagem antes de `db.close()`. O servidor também incorpora o encerramento aos jobs aguardados. Eventos de outro worker são filtrados pelo controle de geração já existente. Essa leitura não substitui a prova nativa de bloqueio/suspensão.
+
+**Parecer deste corte: domínio, fronteira sintética, HTTP, direitos e roundtrip de acervo revisados e aprovados nos testes descritos.** Ainda pendentes: interface real, prova nativa isolada, carga/desempenho e candidata/instalação. A revisão visual e dos demais recursos seguirá os artefatos produzidos pelos seus responsáveis.
+
+## Interface compartilhada, áudio e apresentação
+
+Leitura independente dos diffs de `experiencia-*`, `lume-soft-*`, `lume-motion.js` e `desktop/companheiro.*` identificou duas regressões concretas. O caminho novo do mascote ignorava a assinatura de estado, permitindo que polling inalterado reiniciasse o gesto; o executor reproduziu dois testes RED e corrigiu a deduplicação operacional sem impedir prévias explícitas. A companhia também deixava uma emissão já iniciada continuar com o ganho anterior ao mudar o volume; a coordenação acrescentou cancelamento nessa mudança. O erro textual de acentuação no fallback de áudio foi corrigido.
+
+Repetição independente sem navegador: `node --test --test-concurrency=1 test/lume-soft-ui-motion.test.js test/lume-soft-ui-audio.test.js`, **8/8, saída zero**, 158,1003 ms, log `ui-review-light.txt`. Abrange deduplicação operacional, eventos diferentes, redução/ocultação, opt-in, assinaturas de áudio e revogação/volume durante resume. O teste adicional de emissão ativa em `experiencia-companheiro-ui.test.js` foi lido, mas ainda não repetido: ele inicia Edge e permaneceu aguardando liberação para não concorrer com o diagnóstico nativo. Portanto a correção correspondente tem revisão de código neste corte, não nova execução independente de navegador.
+
+Lidos os recibos HTTP/SQLite e capturas existentes de Agora claro, atividade pausada escura e galeria CSS200%. As superfícies, texto, controles e personagem aparecem coerentes; as capturas são sintéticas. Lidos também banner e prancha editorial: seis poses ilustradas, distintas das treze expressões disponíveis no produto. O marketing identifica arte editorial e não apresenta os desenhos como telas ou prova de desempenho. Não houve lançamento de navegador pelo revisor para essa inspeção. O recibo visual anterior permanece com o texto alternativo antigo de treze poses e será atualizado pela coordenação depois do baseline; a revisão não o apresenta como renderização do texto corrigido.
+
+README, changelog, índice e documentos de atividade mantêm separação entre implementação e gates de instalação/qualidade/utilidade. Foi corrigida uma generalização do texto de restauração: restaurar em outro perfil não revoga a escolha da origem; o destino nasce desligado. Os cinco arquivos locais de fonte/licença conferem tamanho e SHA256 contra `FONTES.json`. Isso verifica correspondência com o manifesto fornecido, sem alegar nova auditoria independente da origem remota.
+
+O recibo `github-created.json`, de 05:55:58 UTC, registra o novo repositório privado `Cigano-agi/LUME-1.0`, Actions desligado e branch padrão ainda vazia. Sustenta a afirmação de criação; não comprova push ou publicação dos arquivos. A documentação nativa e os resultados das tentativas de baseline continuam sem aprovação de percurso: três tentativas pararam no reload do harness, sem screenshots ou métricas válidas. Nenhuma causa de produto foi demonstrada por esses timeouts.
+
+## Complemento — companhia e percurso nativo concluídos
+
+Após liberação de carga, repetidos sequencialmente `test/experiencia-companheiro-ui.test.js` e `test/lume-1-desktop-ui.test.js` com o timeout padrão de 180 segundos: **10/10, saída zero**, 15.027,1541 ms, `companhia-review-final.txt`. Inclui emissão em curso interrompida quando o volume muda para zero, deduplicação, silêncio inicial/pausa/ocultação, patch parcial, persistência, estados e controles da companhia. As asserções e o fechamento do navegador passaram. Captura escura expandida foi lida. Não há avaliação auditiva humana nessa prova instrumentada.
+
+Conferidos independentemente `baseline-4AuGwv/resultado.json` (05:56:30–05:56:54 UTC) e `current-BNSO5a/resultado.json` (05:57:10–05:57:37 UTC): ambos `passed`, duas inicializações e saídas normais cada, nenhum erro JS/HTTP. O atual registra treze expressões, 22 fluxos de uma a três ações, onze capturas e quatorze chamadas de atividade sintética; o baseline tem sete capturas. Lidas as capturas de Agora claro nas duas versões, atividade sintética e aparência em zoom nativo 200% com movimento reduzido. O controle de atividade acumulou cinco segundos fictícios, removeu o aplicativo excluído e preservou pausa/exclusão após reconstrução e reinício. `realCollectorEnabledInProfile:false` permanece explícito.
+
+A correção do harness aguarda carregamento nativo completo e confirma `isLoading:false`, caminho `/app` e `document.readyState:complete` antes de instalar a interceptação e recarregar. Não remove assert de página, erros, saída ou persistência, nem altera fonte do produto. As três tentativas anteriores continuam falhas preservadas; seu timeout não foi reclassificado como defeito comprovado do produto. A entrada de QA continua instrumentando ausência de foco, portanto esta execução não substitui futura prova da candidata sem instrumentação.
+
+As métricas são observacionais: cinco amostras de repouso antes/depois por variante, com UI baseline e serviço atual, e percursos posteriores diferentes. A mediana da CPU agregada após interação foi aproximadamente 0,1084%→0,1275% (diferença de 0,0192 ponto percentual, cerca de 17,7% relativo); o working set agregado ficou próximo de 737 MiB. Não é comparação causal de desempenho, carga do coletor real, prova de ausência de regressão ou hardware de 8 GB. Não se usa a menor duração de abertura isolada como ganho do produto.
+
+**Percurso nativo sintético e gate independente da companhia aprovados neste complemento.** Coleta positiva real, desempenho representativo, empacotamento/instalação beta.8, fixação, push e gates anteriores continuam dependentes de suas provas. A regressão ampla iniciou depois que o revisor confirmou o encerramento de seu navegador; nenhum outro GUI foi executado simultaneamente por este revisor.

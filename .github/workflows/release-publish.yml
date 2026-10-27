@@ -1,0 +1,85 @@
+name: Aprovar e publicar Lume beta
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag exata produzida pelo workflow assinado, por exemplo v3.2.0-beta.1"
+        required: true
+        type: string
+      build_run_id:
+        description: "ID da execucao verde de Preparar Lume beta assinado"
+        required: true
+        type: string
+      confirmation:
+        description: "Digite PUBLICAR para confirmar a promocao"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: lume-release-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: release-beta
+    env:
+      LUME_RELEASE_APPROVED: PUBLICAR
+      LUME_RELEASE_TAG: ${{ inputs.tag }}
+      LUME_RELEASE_SOURCE_RUN_ID: ${{ inputs.build_run_id }}
+      LUME_RELEASE_CONFIRMATION: ${{ inputs.confirmation }}
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Exigir confirmacao humana literal
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$LUME_RELEASE_CONFIRMATION" = "PUBLICAR"
+          [[ "$LUME_RELEASE_SOURCE_RUN_ID" =~ ^[0-9]+$ ]]
+          [[ "$LUME_RELEASE_TAG" =~ ^v3\.[0-9]+\.[0-9]+(-beta\.[0-9]+)?$ ]]
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Vincular aprovacao ao tag, commit e run assinada
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "/repos/$GITHUB_REPOSITORY/actions/runs/$LUME_RELEASE_SOURCE_RUN_ID" > "$RUNNER_TEMP/source-run.json"
+          node --input-type=module <<'NODE'
+          import {execFileSync} from 'node:child_process';
+          import {readFileSync} from 'node:fs';
+          import {parseReleaseVersion} from './scripts/release-version.mjs';
+          const pkg=JSON.parse(readFileSync('package.json','utf8'));
+          const version=parseReleaseVersion(pkg.version).raw;
+          const tag=process.env.LUME_RELEASE_TAG;
+          if(tag!==`v${version}`)throw Error('A tag aprovada diverge da versao canonica.');
+          const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+          const tagged=execFileSync('git',['rev-list','-n','1',tag],{encoding:'utf8'}).trim();
+          if(head!==tagged)throw Error('O checkout nao corresponde ao tag aprovado.');
+          const run=JSON.parse(readFileSync(process.env.RUNNER_TEMP+'/source-run.json','utf8'));
+          if(run.id!==Number(process.env.LUME_RELEASE_SOURCE_RUN_ID)||run.event!=='push'||run.status!=='completed'||run.conclusion!=='success'||run.head_sha!==head||run.path!=='.github/workflows/release.yml')throw Error('A run informada nao e a preparacao assinada verde deste tag.');
+          NODE
+      - name: Baixar somente os dois artefatos assinados da run aprovada
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir release-files
+          gh run download "$LUME_RELEASE_SOURCE_RUN_ID" --name release-windows --dir release-files
+          gh run download "$LUME_RELEASE_SOURCE_RUN_ID" --name release-macos --dir release-files
+      - name: Conferir release completa antes de publicar
+        run: node scripts/release-readiness.mjs --mode publish --artifacts release-files
+      - name: Publicar binarios, snapshots imutaveis e manifestos vivos por ultimo
+        run: node scripts/publicar-release.mjs release-files

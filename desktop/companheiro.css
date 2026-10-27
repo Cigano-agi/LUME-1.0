@@ -1,0 +1,39 @@
+/* Shared character; a quiet, compact surface that never requests focus. */
+@font-face {font-family:'Open Runde';src:url('../src/painel/fonts/open-runde-regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face {font-family:'Open Runde';src:url('../src/painel/fonts/open-runde-semibold.woff2') format('woff2');font-weight:600 800;font-display:swap}
+:root {color-scheme:light;--paper:#fffefa;--ink:#1e3a34;--muted:#5e7069;--line:#e3e8df;--soft:#f5f7ef;--focus:#365db5;font:400 16px/1.5 'Open Runde',sans-serif;color:var(--ink);font-synthesis:none}
+:root[data-theme=dark] {color-scheme:dark;--paper:#202d28;--ink:#eff5ed;--muted:#b3c4ba;--line:#3a4c42;--soft:#17231e;--focus:#aecaff}
+* {box-sizing:border-box}
+[hidden] {display:none!important}
+html,body {width:100%;min-height:100%;margin:0;background:transparent}
+body {padding:10px;overflow-y:auto;min-height:100vh;display:flex;align-items:flex-end}
+button {font:600 14px/1.4 'Open Runde',sans-serif;min-height:44px;min-width:44px;padding:10px 12px;border:1px solid var(--line);border-radius:16px;background:var(--paper);color:var(--ink);cursor:pointer;-webkit-app-region:no-drag;overflow-wrap:anywhere;transition:background-color 180ms,transform 180ms cubic-bezier(.2,.8,.2,1)}
+button:hover {background:var(--soft)}
+button:active {transform:scale(.98)}
+button:focus-visible {outline:3px solid var(--focus);outline-offset:2px}
+button:disabled {cursor:wait;color:var(--muted)}
+.companion {position:relative;isolation:isolate;min-height:190px;width:100%;padding:16px;border:1px solid var(--line);border-radius:30px;background:var(--paper);box-shadow:0 2px 3px #15332605,0 10px 24px #15332614}
+.message-card {min-height:104px;padding-left:84px}
+.message-heading {display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+h1 {margin:0;font-size:14px;font-weight:600}
+.brand {font-size:14px;color:var(--muted)}
+.state-dot {width:7px;height:7px;border-radius:50%;background:var(--muted)}
+[data-state=atencao] .state-dot {background:#a8892c}
+#mensagem {margin:8px 0 12px;font-size:16px;line-height:1.45;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.character {position:absolute;left:0;top:28px;width:108px;height:104px;padding:0;border:0;background:transparent;cursor:pointer}
+.character:hover {background:transparent}
+.character .ls-mascote {display:block;width:108px;height:104px}
+.compact-controls,.controls {display:flex;flex-wrap:wrap;gap:8px}
+.compact-controls>button {flex:1 1 100px}
+.detail {padding-top:16px;margin-top:16px;border-top:1px solid var(--line);overflow-wrap:anywhere}
+h2 {font-size:24px;line-height:1.25;margin:8px 0 12px;letter-spacing:-.025em}
+.detail p {margin:8px 0;font-size:16px}
+.detail .metadata,.detail .scope {font-size:14px;color:var(--muted)}
+.controls {margin-top:16px}
+.controls button {flex:1 1 116px}
+.controls .open-button {background:#f4ce46;color:#253b30;border-color:transparent}
+.control-status {font-size:14px;color:var(--ink);margin:12px 0 0;overflow-wrap:anywhere}
+.control-status:empty {display:none}
+html[data-motion=reduce] *,html[data-visible=false] * {animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(forced-colors:active) {.companion,button {border:1px solid CanvasText;background:Canvas;color:CanvasText}button:focus-visible{outline-color:Highlight}}

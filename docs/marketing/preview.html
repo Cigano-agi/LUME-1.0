@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lume — apresentação editorial</title>
+<style>
+@font-face{font-family:'Open Runde';src:url('../../src/painel/fonts/open-runde-regular.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Open Runde';src:url('../../src/painel/fonts/open-runde-medium.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Open Runde';src:url('../../src/painel/fonts/open-runde-semibold.woff2') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'Open Runde';src:url('../../src/painel/fonts/open-runde-bold.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{--paper:#f7f6ef;--surface:#fffefa;--forest:#1e3a34;--muted:#5d7069;--line:#e2e7df;--mint:#e0f1e8;--lavender:#eee8f7;--yellow:#f4ce46}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--forest);font-family:'Open Runde',Arial,sans-serif;line-height:1.65}main{max-width:1336px;margin:auto;padding:44px 28px 64px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:600;margin:0 0 20px;color:var(--muted)}figure{margin:0}figure:not(.journey){border-radius:28px;overflow:hidden;box-shadow:0 18px 48px #25443708}img{display:block;width:100%;height:auto}.intro{max-width:760px;margin:48px 0 36px}h1{font-size:clamp(30px,3.5vw,44px);line-height:1.18;letter-spacing:-.035em;margin:0 0 18px;font-weight:700}.intro p{font-size:19px;margin:0;color:var(--muted)}.details{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:36px 0}.details>div{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--mint)}.details>div+div{background:var(--lavender)}.details h2{font-size:20px;line-height:1.35;margin:0 0 12px}.details p{margin:0;font-size:16px;color:var(--muted)}.expressions{margin:44px 0}.expressions h2{font-size:28px;line-height:1.3;letter-spacing:-.025em;margin:0 0 12px}.expressions>p{max-width:760px;margin:0 0 24px;color:var(--muted)}figcaption{padding:16px 24px;background:var(--surface);font-size:14px;color:var(--muted)}.notice{padding:24px 28px;border:1px solid #e8deb6;border-radius:24px;background:#fff7d7;margin-top:36px;font-size:14px}.notice strong{display:block;margin-bottom:4px}footer{font-size:13px;color:var(--muted);margin-top:24px}.journey-mobile{display:none}
+@media(max-width:600px){main{padding:24px 18px 36px}.intro{margin:30px 0}.intro p{font-size:17px}.details{grid-template-columns:1fr;gap:16px;margin:28px 0}.details>div{padding:24px}.notice{padding:20px}.eyebrow{font-size:11px}.expressions h2{font-size:25px}figure.journey{display:none}.journey-mobile{display:grid;gap:24px;margin:0;padding:26px;background:var(--forest);border-radius:24px;list-style:none;color:var(--surface)}.journey-mobile li+li{border-top:1px solid #547568;padding-top:24px}.journey-mobile small{display:block;color:var(--yellow);letter-spacing:.07em;font-size:11px;font-weight:600}.journey-mobile h2{font-size:23px;line-height:1.3;margin:10px 0}.journey-mobile p{color:#c3e6d6;margin:0;font-size:15px}figcaption{padding:16px;font-size:13px}}
+</style>
+<main>
+  <p class="eyebrow">Apresentação editorial · Lume 1.0</p>
+  <figure><img src="lume-banner.svg" width="1280" height="520" alt="Lume 1.0. Clareza para o próximo passo. O personagem fantasma amarelo segura uma lanterna."></figure>
+  <section class="intro">
+    <h1>Retome o fio da conversa.</h1>
+    <p>Encontre a fonte de um combinado, acompanhe o contexto de um projeto e confira o que aconteceu depois.</p>
+  </section>
+  <figure class="journey" aria-label="Diagrama editorial em três momentos."><img src="lume-percurso.svg" width="1280" height="360" alt="Recuperar contexto em fontes autorizadas; acompanhar projetos e compromissos; conferir resultados e evidências."></figure>
+  <ol class="journey-mobile" aria-label="Três momentos do Lume; apresentação editorial">
+    <li><small>01 / CONTEXTO</small><h2>Recupere o fio.</h2><p>Conversas autorizadas, autoria e fontes consultáveis.</p></li>
+    <li><small>02 / ACOMPANHAMENTO</small><h2>Veja o que segue.</h2><p>Projetos e compromissos com contexto e correção.</p></li>
+    <li><small>03 / RESULTADO</small><h2>Confira a entrega.</h2><p>Resultados e evidências, com estados distintos.</p></li>
+  </ol>
+  <section class="details" aria-label="Princípios do produto">
+    <div><h2>Contexto ligado à origem</h2><p>Autoria, data e fontes acompanham a memória. Sugestões podem ser corrigidas; resultados informados, verificados, enviados e aceitos têm estados diferentes.</p></div>
+    <div><h2>Autorização faz parte do caminho</h2><p>Armazenamento e busca têm base local. A organização com ChatGPT envolve processamento remoto e depende de fontes autorizadas e configuração.</p></div>
+  </section>
+  <section class="expressions" aria-labelledby="expressions-title">
+    <h2>Uma presença com expressão.</h2>
+    <p>Olhos, braços e uma pequena lanterna dão forma ao Lume. No painel, a galeria permite conhecer as poses; prévias lúdicas são identificadas e não representam atividade nas conversas.</p>
+    <figure><img src="lume-expressoes.svg" width="1280" height="470" alt="Prancha editorial com seis das treze expressões vetoriais do fantasma Lume disponíveis no painel."><figcaption>Seleção de seis das treze expressões vetoriais. Movimento reduzido, silêncio e escolha do usuário fazem parte da experiência em validação.</figcaption></figure>
+  </section>
+  <aside class="notice"><strong>Material editorial. Produto em validação.</strong>Estes visuais não são capturas do aplicativo, prova de desempenho ou anúncio de release. Não contêm conversas, pessoas ou dados reais.</aside>
+  <footer>Lume · Identidade comercial 1.0 · Consulte os contratos e evidências do repositório.</footer>
+</main>
+</html>

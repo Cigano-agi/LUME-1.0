@@ -1,0 +1,50 @@
+.ls-mascote { width:144px; height:132px; overflow:visible; flex:none; }
+.ls-mascote .ls-shadow { fill:#284c3912; }
+.ls-mascote .ls-body { transform-origin:86px 125px; }
+.ls-mascote .ls-sheet { stroke:#bd9d4d; stroke-width:.8; }
+.ls-mascote .ls-arm { fill:#ffe49a; stroke:#bd9d4d; stroke-width:.8; }
+.ls-mascote .ls-arm-left { transform-origin:45px 85px; }
+.ls-mascote .ls-arm-right { transform-origin:125px 82px; }
+.ls-mascote .ls-highlight { fill:none; stroke:#fffdf1; stroke-width:5; stroke-linecap:round; opacity:.65; }
+.ls-mascote .ls-face { fill:#334b3d; }
+.ls-mascote :is(.ls-mouth,.ls-eye-smile,.ls-eye-rest,.ls-brows) { fill:none; stroke:#334b3d; stroke-width:2.8; stroke-linecap:round; }
+.ls-mascote .ls-cheeks { fill:#e2a585; opacity:.55; }
+.ls-mascote :is(.ls-eye-smile,.ls-eye-rest,.ls-brows,.ls-mouth-oh,.ls-idea,.ls-spark,.ls-attention,.ls-book) { display:none; }
+.ls-mascote .ls-lantern { fill:#e9c75c; stroke:#9c8038; stroke-width:1.5; }
+.ls-mascote .ls-lantern-core { fill:#fff8c9; }
+.ls-mascote :is(.ls-lantern-handle,.ls-lantern-line) { fill:none; stroke:#8d753d; stroke-width:2; stroke-linecap:round; }
+.ls-mascote .ls-book { fill:#c3e6d6; stroke:#547568; stroke-width:1.5; stroke-linejoin:round; }
+.ls-mascote .ls-idea { fill:#f4ce46; stroke:#a68a33; stroke-width:2; stroke-linecap:round; }
+.ls-mascote .ls-spark { fill:none; stroke:#b49acb; stroke-width:3; stroke-linecap:round; }
+.ls-mascote .ls-attention circle { fill:#ede7f7; stroke:#b49acb; }
+.ls-mascote .ls-attention path { stroke:#65517d; stroke-width:2.5; stroke-linecap:round; }
+.ls-mascote[data-estado=buscando] .ls-arm-right { transform:rotate(-24deg); }
+.ls-mascote[data-estado=buscando] .ls-face { transform:translateX(4px); }
+.ls-mascote[data-estado=trabalhando] .ls-mouth { d:path('M79 91L91 91'); }
+.ls-mascote:is([data-estado=concluido],[data-estado=celebracao],[data-estado=acolhimento]) .ls-eyes { display:none; }
+.ls-mascote:is([data-estado=concluido],[data-estado=celebracao],[data-estado=acolhimento]) .ls-eye-smile { display:block; }
+.ls-mascote:is([data-estado=concluido],[data-estado=acolhimento]) .ls-arm-left { transform:rotate(30deg); }
+.ls-mascote[data-estado=celebracao] .ls-arm-left { transform:rotate(58deg); }
+.ls-mascote[data-estado=celebracao] .ls-arm-right { transform:rotate(-25deg); }
+.ls-mascote[data-estado=celebracao] .ls-spark { display:block; }
+.ls-mascote:is([data-estado=pausado],[data-estado=descanso]) .ls-eyes { display:none; }
+.ls-mascote:is([data-estado=pausado],[data-estado=descanso]) .ls-eye-rest { display:block; }
+.ls-mascote[data-estado=descanso] .ls-body { transform:rotate(-8deg) translateY(5px); }
+.ls-mascote:is([data-estado=pausado],[data-estado=descanso],[data-estado=desconectado]) .ls-lantern-glow { opacity:0; }
+.ls-mascote:is([data-estado=pausado],[data-estado=descanso],[data-estado=desconectado]) .ls-lantern-core { fill:#c8bf95; }
+.ls-mascote[data-estado=desconectado] .ls-body { opacity:.65; }
+.ls-mascote[data-estado=desconectado] .ls-mouth { d:path('M78 94Q85 88 92 94'); }
+.ls-mascote[data-estado=atencao] .ls-attention { display:block; }
+.ls-mascote[data-estado=atencao] .ls-arm-left { transform:rotate(-25deg); }
+.ls-mascote[data-estado=curiosidade] .ls-body { transform:rotate(7deg); }
+.ls-mascote:is([data-estado=curiosidade],[data-estado=ideia]) .ls-mouth { display:none; }
+.ls-mascote:is([data-estado=curiosidade],[data-estado=ideia]) :is(.ls-mouth-oh,.ls-brows) { display:block; }
+.ls-mascote[data-estado=ideia] .ls-idea { display:block; }
+.ls-mascote[data-estado=leitura] .ls-book { display:block; }
+.ls-mascote[data-estado=leitura] .ls-face { transform:translateY(3px); }
+@media(prefers-reduced-motion:no-preference) {
+  html:not([data-motion=reduce]) .ls-mascote.ls-gesture .ls-body { animation:ls-greet 420ms cubic-bezier(.2,.8,.2,1) 1; }
+  @keyframes ls-greet { 0%,100% { translate:0 0; } 45% { translate:0 -4px; } }
+}
+html[data-motion=reduce] .ls-mascote *,html[data-visible=false] .ls-mascote *,.ls-mascote[data-visible=false] * { animation:none!important; transition:none!important; }
+@media(prefers-reduced-motion:reduce) { .ls-mascote * { animation:none!important; transition:none!important; } }

@@ -1,0 +1,7 @@
+{
+  "schema": "lume-comunicados-policy-v1",
+  "enabled": false,
+  "channel": "beta",
+  "feedUrl": null,
+  "publicKey": null
+}

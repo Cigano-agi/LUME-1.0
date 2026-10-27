@@ -1,0 +1,13 @@
+node_modules/
+work/
+dist/
+data/
+docs/
+.git/
+.vercel/
+site-dist/
+test/
+.planning/
+bin/
+vault-modelo/
+scripts-scratch/

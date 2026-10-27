@@ -1,0 +1,26 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lume · Notetaker · QA sintético</title><link rel="stylesheet" href="/lume-theme.css"><link rel="stylesheet" href="/lume-dark.css"><link rel="stylesheet" href="/beta05.css"><link rel="stylesheet" href="/notetaker.css"><style>html,body{margin:0}.qa-label{position:relative;z-index:2;padding:7px 18px;background:#26231d;color:#fff2c6;font:700 10px/1.4 Manrope,Segoe UI,sans-serif;letter-spacing:.12em;text-align:center}</style></head><body><div class="qa-label">DADOS FICTÍCIOS · APENAS QA DA VISTA ISOLADA · SEM ÁUDIO REAL</div><main id="app"></main><script type="module">
+import { montarVista } from '/notetaker-view.js';
+const segment = { id:'trecho-1', inicio:'00:12:48', fim:'00:13:07', texto:'Vamos enviar a proposta até terça-feira.', coberto:true };
+const base = { id:'sessao-ficticia', titulo:'Reunião de alinhamento', fonte:{disponivel:true,persistida:true}, salvoAte:'10h18', cobertura:'18 min cobertos', trechos:[segment,{id:'trecho-2',inicio:'00:13:07',fim:'00:13:24',texto:'A revisão fica com o time antes do envio.',coberto:true,correcao:'A revisão fica com o time de projeto antes do envio.'}], transcricaoConfirmada:true, organizacaoAprovada:false };
+const states = {
+  vazio:{estado:'vazio',titulo:'Nova reunião',opcoesEntrada:[{id:'mic',nome:'Microfone',selecionada:false,disponivel:true},{id:'system',nome:'Áudio do sistema',selecionada:false,disponivel:false}],consentimento:false},
+  importando:{...base,estado:'importando',fonte:{disponivel:null,persistida:false},trechos:[],transcricaoConfirmada:false,causa:'Importação em curso · arquivo local.'},
+  gravando:{...base,estado:'gravando',fonte:{disponivel:null,persistida:false},salvamentoConfirmado:true,trechos:[],transcricaoConfirmada:false,entradas:[{nome:'Microfone',ativo:true},{nome:'Áudio do sistema',ativo:false,estado:'sem sinal'}],salvoAte:'10h18',cobertura:'18 min cobertos'},
+  pausado:{...base,estado:'pausado',entradas:[{nome:'Microfone',ativo:false,estado:'pausado'}]},
+  interrompido:{...base,estado:'interrompido',entradas:[{nome:'Microfone',ativo:false,estado:'interrompido'}],causa:'Microfone desconectado. Retomar exige nova escolha da entrada.'},
+  processando:{...base,estado:'processando',trechos:[],transcricaoConfirmada:false,causa:'Transcrevendo localmente · 4 de 12 trechos.'},
+  'modelo-ausente':{...base,estado:'modelo-ausente',trechos:[],transcricaoConfirmada:false,causa:'Modelo de transcrição não instalado.'},
+  revisavel:{...base,estado:'revisavel'},
+  silencio:{...base,estado:'revisavel',trechos:[{id:'silencio',inicio:'00:02:10',fim:'00:02:22',tipo:'silencio',coberto:true},{id:'lacuna',inicio:'00:02:22',fim:'00:02:39',tipo:'lacuna',coberto:false},segment]},
+  'audio-ausente':{...base,estado:'revisavel',fonte:{disponivel:false,persistida:false,motivo:'arquivo removido do dispositivo'}},
+  erro:{...base,estado:'erro',fonte:{disponivel:false,persistida:false},trechos:[],transcricaoConfirmada:false,causa:'Não foi possível guardar o trecho. Libere espaço e tente novamente.'}
+};
+window.calls=[];
+const callbacks=Object.fromEntries(['iniciar','importar','parar','pausar','retomar','ouvir','ouvir-trecho','criar-acao','cancelar-importacao','tentar-novamente','ver-modelo','selecionar-entrada','confirmar-consentimento'].map(key=>[key,payload=>window.calls.push(payload)]));
+const view=montarVista(document.getElementById('app'),states.vazio,callbacks);
+window.showState=name=>view.atualizar(states[name]);
+window.updateRaw=dto=>view.atualizar(dto);
+window.setActionHandler=(key,handler)=>{callbacks[key]=handler};
+window.destroyView=()=>view.destruir();
+window.states=states;
+</script></body></html>

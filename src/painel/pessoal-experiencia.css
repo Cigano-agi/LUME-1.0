@@ -1,0 +1,139 @@
+/* Calm connection surfaces; yellow remains the accent of the daily action card. */
+html .workspace.desk06 {
+  --lume-bg:#f5f5f2;--lume-paper:#fafaf7;--lume-white:#ffffff;
+  --lume-ink:#242a28;--lume-muted:#626a66;--lume-line:#dedfd8;
+  --lume-line-strong:#bcc3bb;--lume-green-soft:#eef2ed;
+  --lume-green:#376c54;--lume-green-dark:#28513f;--lume-focus:#376a99;
+}
+html[data-theme="dark"] .workspace.desk06 {
+  --lume-bg:#171b19;--lume-paper:#1d2320;--lume-white:#242c27;
+  --lume-ink:#edf0e9;--lume-muted:#bac4ba;--lume-line:#3b473e;
+  --lume-line-strong:#647567;--lume-green-soft:#2b3930;
+  --lume-green:#b2d5bb;--lume-green-dark:#c0dfc8;--lume-focus:#aacbf0;
+}
+html .workspace.desk06 .sidebar nav button.active {
+  color:var(--lume-ink);background:var(--lume-green-soft);border-color:var(--lume-line-strong);box-shadow:none;
+}
+html .workspace.desk06 .primary {
+  color:var(--lume-white);background:var(--lume-ink);border-color:var(--lume-ink);box-shadow:none;font-weight:700;
+}
+html .workspace.desk06 .primary:hover {color:var(--lume-white);background:var(--lume-green-dark);border-color:var(--lume-green-dark)}
+html[data-theme="dark"] .workspace.desk06 .primary {color:#18251e;background:#c3d8c8;border-color:#c3d8c8}
+html[data-theme="dark"] .workspace.desk06 .primary:hover {color:#18251e;background:#d7e8db;border-color:#d7e8db}
+html .workspace.desk06 .secondary {box-shadow:none;font-size:13px}
+html .workspace.desk06 .text-button {color:var(--lume-green-dark)}
+html .workspace.desk06 #settings-group-connections-cards {display:flex;flex-direction:column;gap:20px}
+html .workspace.desk06 #settings-group-connections .settings-card {
+  width:100%;min-width:0;margin:0;padding:28px 30px;border:1px solid var(--lume-line);border-radius:18px;
+  background:var(--lume-white);box-shadow:0 4px 18px #1a2b2105;
+}
+html .workspace.desk06 #settings-group-connections .settings-card h2 {font-size:23px;letter-spacing:-.035em;margin:4px 0 10px}
+html .workspace.desk06 #settings-group-connections .settings-card h3 {margin-top:24px;font-size:17px}
+html .workspace.desk06 #settings-group-connections .settings-card p {max-width:76ch;font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+html .workspace.desk06 #settings-group-connections .settings-card .eyebrow {font-size:10px;letter-spacing:.12em;color:var(--lume-muted)}
+html .workspace.desk06 #settings-group-connections details {margin:14px 0 0;padding:0;border:0;border-top:1px solid var(--lume-line);border-radius:0;background:transparent}
+html .workspace.desk06 #settings-group-connections summary {padding:13px 0;min-height:44px;cursor:pointer;font-size:14px;font-weight:650;color:var(--lume-ink)}
+html .workspace.desk06 #settings-group-connections form {max-width:720px}
+html .workspace.desk06 #settings-group-connections label {font-size:13px;line-height:1.6}
+html .workspace.desk06 #settings-group-connections input:not([type=checkbox]),
+html .workspace.desk06 #settings-group-connections select,
+html .workspace.desk06 #settings-group-connections textarea {width:100%;min-width:0;min-height:44px}
+html .workspace.desk06 #settings-group-connections .button-row {display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+html .workspace.desk06 #settings-group-connections button {min-height:44px}
+html .workspace.desk06 #settings-group-connections :focus-visible {outline:3px solid var(--lume-focus);outline-offset:3px}
+html .workspace.desk06 #settings-group-connections [role=status]:empty {display:none}
+html .workspace.desk06 #settings-group-connections [aria-busy=true] [role=status] {opacity:.8}
+.pessoal-steps {display:flex;flex-wrap:wrap;gap:8px 20px;counter-reset:setup;list-style:none;padding:14px 0;margin:0 0 10px;border-bottom:1px solid var(--lume-line)}
+.pessoal-steps li {display:flex;align-items:center;gap:8px;color:var(--lume-muted);font-size:12px;counter-increment:setup}
+.pessoal-steps li::before {content:counter(setup);display:grid;place-items:center;border:1px solid var(--lume-line-strong);border-radius:50%;width:24px;height:24px;flex:none;font-size:11px}
+.pessoal-steps li[data-complete=true]::before {content:'✓';background:var(--lume-green-soft);color:var(--lume-green-dark)}
+.pessoal-steps .text-button {padding:0;font-size:12px}
+.pessoal-state {padding:11px 14px;border-left:3px solid var(--lume-line-strong);border-radius:0 8px 8px 0;background:var(--lume-paper)}
+.pessoal-state[data-state=ready] {border-left-color:var(--lume-green);background:var(--lume-green-soft)}
+.pessoal-conversation-filters {display:grid;grid-template-columns:minmax(0,1fr) minmax(155px,.5fr);gap:16px}
+html .workspace.desk06 #pessoal-conversation-id {font-size:12px;overflow-wrap:anywhere}
+html .workspace.desk06 #pessoal-autonomia {font-size:12px;color:var(--lume-muted)}
+html .workspace.desk06 .pessoal-companion-form .check {display:flex;align-items:flex-start;gap:12px;padding:12px 0;margin:0}
+html .workspace.desk06 .pessoal-companion-form .check input {margin-top:4px;flex:none}
+html .workspace.desk06 .pessoal-companion-form .check span {display:block}
+html .workspace.desk06 .pessoal-companion-form .check small {display:block;color:var(--lume-muted);font-size:12px;font-weight:400;line-height:1.6;margin-top:2px}
+html .workspace.desk06 #pessoal-feedback,html .workspace.desk06 #telegram-hoje-feedback {margin-top:16px;padding:0;text-align:left}
+html .workspace.desk06 .today-heading>.central-feedback-shortcut.desk-feedback {display:inline-flex;flex-basis:auto;min-height:44px;padding:8px 13px;border:1px solid var(--lume-line-strong);border-radius:10px;font-size:12px;background:var(--lume-white);color:var(--lume-ink)}
+@media(prefers-reduced-motion:no-preference) {
+  #settings-group-connections button {transition:background-color .26s ease,border-color .26s ease,transform .26s ease}
+  #settings-group-connections button:active:not(:disabled) {transform:translateY(1px)}
+  #settings-group-connections details[open]>form {animation:pessoal-reveal .28s ease-out}
+  @keyframes pessoal-reveal {from{opacity:.5;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+}
+
+/* Conversation content is solid. Selection is a full-row fill; chrome stays quiet. */
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento {margin:28px 0 32px;padding:24px 0 8px;border-top:1px solid var(--lume-line);border-bottom:1px solid var(--lume-line)}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento [hidden] {display:none!important}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-atendimento-heading {display:flex;gap:20px;align-items:center;justify-content:space-between;margin-bottom:20px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento h3 {margin:0 0 6px;font-size:24px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-atendimento-heading p {margin:0;font-size:15px}
+.pessoal-lume-mark {flex:none;object-fit:contain}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento label {font-size:15px;font-weight:600}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento :is(input,select,button) {font-size:15px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento :is(input,select) {margin-top:6px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento input[type=checkbox] {width:20px;height:20px;min-height:20px;margin:2px 0 0;accent-color:var(--lume-attendance-accent,var(--lume-green-dark));flex:none}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .check {display:flex;align-items:flex-start;gap:12px;min-height:44px;padding:12px 0;cursor:pointer;font-weight:400}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-list {list-style:none;padding:0;margin:8px 0 20px;max-height:402px;overflow-y:auto;scroll-padding:8px;border-top:1px solid var(--lume-line);border-bottom:1px solid var(--lume-line);border-radius:12px;background:var(--lume-white)}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-list li {margin:0;padding:0;list-style:none}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-list li+li {border-top:1px solid var(--lume-line)}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-row {display:flex;align-items:center;gap:14px;width:100%;min-height:94px;padding:16px;border:0;border-radius:0;text-align:left;background:var(--lume-white);color:var(--lume-ink);box-shadow:none;white-space:normal}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-row:is(:hover,[aria-pressed=true]) {background:var(--lume-attendance-selection,var(--lume-green-soft));color:var(--lume-ink)}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-row[aria-pressed=true] {box-shadow:inset 3px 0 var(--lume-attendance-outline,var(--lume-green-dark))}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-row:focus-visible {outline-offset:-4px;position:relative}
+.pessoal-conversation-avatar {display:grid;place-items:center;width:40px;height:40px;flex:none;border:1px solid var(--lume-line-strong);border-radius:50%;background:var(--lume-paper);font-size:17px;font-weight:600}
+.pessoal-conversation-copy {display:grid;grid-template-columns:minmax(0,1fr);gap:2px;flex:1;min-width:0;overflow-wrap:anywhere}
+.pessoal-conversation-copy strong {font-size:17px;font-weight:650;line-height:1.3}
+.pessoal-conversation-relation {font-size:13px;color:var(--lume-muted);font-weight:400}
+.pessoal-conversation-state {display:flex;align-items:baseline;gap:7px;color:var(--lume-attendance-state,var(--lume-muted));font-size:14px;line-height:1.45;font-weight:500}
+.pessoal-conversation-state>span {width:15px;text-align:center;flex:none;font-weight:700}
+.pessoal-conversation-arrow {flex:none;font-size:25px;font-weight:400;color:var(--lume-muted)}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-empty {padding:22px 18px;color:var(--lume-muted);font-size:15px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento #pessoal-permissions {border:0;margin:0}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento #pessoal-permissions>summary {font-size:17px;overflow-wrap:anywhere}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento #pessoal-permissions[open] {padding:4px 18px 18px;background:var(--lume-paper);border-radius:14px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento #pessoal-selection-status {font-size:15px;background:var(--lume-white);border-color:var(--lume-attendance-outline,var(--lume-line-strong))}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento :is(form,p) {max-width:100%}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-choice-grid {display:grid;grid-template-columns:1fr 1fr;gap:18px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-pause-row {display:flex;align-items:end;flex-wrap:wrap;gap:14px;margin:0 0 12px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-pause-row label {min-width:120px;margin:0;flex:1}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-pause-row button {margin:0}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento #pessoal-attendance-controls>.button-row {margin-top:20px}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento button.primary {background:var(--lume-attendance-accent,var(--lume-green-dark));border-color:var(--lume-attendance-accent,var(--lume-green-dark));color:var(--lume-white)}
+html[data-theme=dark] .workspace.desk06 #pessoal-panel #pessoal-atendimento button.primary {color:#16281c}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento button:disabled {opacity:.55;cursor:default}
+html .workspace.desk06 #pessoal-panel #pessoal-atendimento #pessoal-conversation-result {padding:8px 0;font-size:15px;font-weight:500}
+@media(prefers-reduced-motion:no-preference) {
+  #pessoal-atendimento .pessoal-lume-mark {animation:pessoal-mark-arrive 1.2s ease-out 1 both}
+  @keyframes pessoal-mark-arrive {from{transform:translateY(5px)}to{transform:translateY(0)}}
+}
+@media(prefers-contrast:more) {
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-row {border-bottom:1px solid currentColor}
+  html .workspace.desk06 #settings-group-connections #pessoal-panel #pessoal-atendimento :is(button,input,select) {border:1px solid currentColor}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento button:disabled {opacity:.7}
+}
+@media(max-width:650px) {
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-atendimento-heading {gap:12px;align-items:flex-start}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento h3 {font-size:23px}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-choice-grid {grid-template-columns:1fr;gap:0}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-row {padding:16px 12px;gap:10px}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento #pessoal-permissions[open] {padding:4px 12px 16px}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-conversation-avatar {width:32px;height:32px;font-size:15px}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento .pessoal-lume-mark {width:44px;height:44px}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento #pessoal-save-conversation {width:100%;white-space:normal}
+  html .workspace.desk06 #pessoal-panel #pessoal-atendimento :is(button,input,select) {max-width:100%}
+}
+@media(prefers-reduced-motion:reduce) {
+  html .workspace.desk06 #settings-group-connections *,html .workspace.desk06 .desk-feedback {animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  html .workspace.desk06 #settings-group-connections button:hover {transform:none}
+}
+@media(max-width:650px) {
+  html .workspace.desk06 #settings-group-connections .settings-card {padding:22px 18px;border-radius:14px}
+  .pessoal-conversation-filters {grid-template-columns:1fr;gap:0}
+  .pessoal-steps {gap:4px 16px}
+  html .workspace.desk06 #settings-group-connections .button-row>* {max-width:100%;white-space:normal}
+}

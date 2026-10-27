@@ -1,0 +1,16 @@
+{
+  "schema": "lume-beta06-acceptance-v1",
+  "version": "3.2.0-beta.6",
+  "requirements": {
+    "L06-ORG": {"status": "pendente", "evidence": []},
+    "L06-ACOES": {"status": "pendente", "evidence": []},
+    "L06-ONB": {"status": "pendente", "evidence": []},
+    "L06-DIST": {"status": "pendente", "evidence": []},
+    "L06-FEED": {"status": "pendente", "evidence": []},
+    "L06-TRUST": {"status": "pendente", "evidence": []},
+    "L06-UI": {"status": "pendente", "evidence": []},
+    "L06-AUDIO": {"status": "pendente", "evidence": []},
+    "L06-OPS": {"status": "pendente", "evidence": []},
+    "L06-PILOTO": {"status": "pendente", "evidence": []}
+  }
+}

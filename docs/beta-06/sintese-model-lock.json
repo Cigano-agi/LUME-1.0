@@ -1,0 +1,16 @@
+{
+  "schema": "lume-sintese-research-model-v1",
+  "modelId": "onnx-community/Qwen3-1.7B-ONNX",
+  "revision": "cc6a06a21d614e9b8e92a6adfab1074d4e7d2438",
+  "dtype": "q4",
+  "files": [
+    {"path":"onnx/model_q4.onnx","bytes":2147212861,"sha256":"3763020b62164be3d9c31dc6b15aa042052f5a9da846e991f6c45e0f1a6dced7"},
+    {"path":"tokenizer.json","bytes":9117040,"sha256":"e7a95fce95bf5b0946d0ddb3f9d7caa030b7e850bbe92b0edb26bcf563e9f3d5"},
+    {"path":"tokenizer_config.json","bytes":9705,"sha256":"b0a8115cf05a7002cbe2575058c0139c1dee3f06f221c05717c3444947d78b9f"},
+    {"path":"config.json","bytes":943,"sha256":"d443f9cfc878a105bd075083230394623e477574e47061784744534361214d00"},
+    {"path":"generation_config.json","bytes":219,"sha256":"9e9e031ae8bca36eefcdcdd0b35d83c61baa01e31d68d5f5a961c9ca1a4b95bf"},
+    {"path":"chat_template.jinja","bytes":4116,"sha256":"87a2728cb8dc9fe424d624542f6060ec05a1d285ebbec578bb078900e33396b5"},
+    {"path":"README.md","bytes":523,"sha256":"4867f40ccf198628c00672b0e5b10675c763a8d7608508a4b6624f41d9e24ee0"},
+    {"path":"LICENSE-Qwen3-origin","bytes":11343,"sha256":"832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"}
+  ]
+}

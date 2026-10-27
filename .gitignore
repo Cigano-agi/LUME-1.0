@@ -1,0 +1,41 @@
+# Credenciais, sessões e dados operacionais nunca entram neste repositório.
+.env
+.env.*
+!.env.example
+!.env.exemplo
+.wa-auth*
+**/.wa-auth*/
+*credentials*.json
+*token*.json
+*.pem
+*.key
+cookies*
+node_modules/
+dist/
+logs/
+.audio/
+*.log
+*.db
+*.sqlite*
+pgdata/
+.pgdata/
+data/
+backups/
+work/
+.DS_Store
+Thumbs.db
+native/app-activity/bin/
+native/win-acl/bin/
+native/project-inventory/bin/
+native/audio-local/bin/
+native/audio-local/staging-*/
+
+# Cache do Python gerado ao compilar as ferramentas do vault.
+__pycache__/
+*.pyc
+
+# A caixa montada para os socios nao entra no repo de desenvolvimento.
+dist/
+
+.vercel
+site-dist/

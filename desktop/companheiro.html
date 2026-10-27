@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'none'; form-action 'none'">
+  <title>Lume</title>
+  <link rel="stylesheet" href="../src/painel/lume-soft-mascote.css">
+  <link rel="stylesheet" href="companheiro.css">
+  <script src="../src/painel/lume-soft-mascote.js" defer></script>
+  <script src="../src/painel/lume-soft-audio.js" defer></script>
+  <script src="companheiro.js" defer></script>
+</head>
+<body>
+  <main id="companheiro" class="companion" data-state="desconectado" aria-label="Companheiro Lume">
+    <section class="message-card" aria-live="polite" aria-atomic="true">
+      <div class="message-heading"><span class="state-dot" aria-hidden="true"></span><h1 id="estado">Por aqui</h1><span class="brand">Lume</span></div>
+      <p id="mensagem">Conferindo o estado da companhia.</p>
+    </section>
+    <button id="personagem" class="character" type="button" aria-label="Lume: expandir ou recolher companhia" aria-expanded="false" aria-controls="assunto-detalhe">
+      <span id="mascote-companhia" aria-hidden="true"></span>
+    </button>
+    <div class="compact-controls">
+      <button id="expandir" type="button" aria-expanded="false" aria-controls="assunto-detalhe">Ver companhia</button>
+      <button id="pausar" type="button">Pausar</button>
+    </div>
+    <section id="assunto-detalhe" class="detail" hidden aria-label="Contexto da companhia">
+      <p id="pessoa" class="metadata" hidden></p>
+      <h2 id="assunto" hidden></h2>
+      <p id="motivo" hidden></p>
+      <p id="prazo" class="metadata" hidden></p>
+      <p id="fonte" class="metadata" hidden></p>
+      <p class="scope">Pausar a companhia não altera as regras de atendimento.</p>
+      <div class="controls" role="group" aria-label="Controles da companhia">
+        <button id="abrir" type="button" class="open-button">Abrir Lume</button>
+        <button id="adiar" type="button" hidden>Adiar 30 min</button>
+        <button id="som" type="button" aria-pressed="false">Som desligado</button>
+        <button id="ocultar" type="button">Ocultar</button>
+      </div>
+    </section>
+    <p id="control-status" class="control-status" role="status"></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; img-src 'none'">
+  <title>Revisão local · Laya</title>
+  <style>
+    :root{font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;color:#173128;background:#f3f4ee}
+    *{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer}
+    header{background:#143d30;color:#f6f7f0;padding:24px clamp(20px,5vw,64px)}header p{max-width:720px;color:#d3e4d8;margin:8px 0 0}
+    main{max-width:1120px;margin:auto;padding:24px clamp(16px,4vw,36px) 80px;display:grid;gap:20px}
+    .panel{background:#fff;border:1px solid #d8dfd5;border-radius:18px;padding:clamp(18px,3vw,30px);box-shadow:0 8px 28px #1731280b}
+    h1{font-size:clamp(27px,4vw,42px);line-height:1.12;margin:0}h2{font-size:21px;margin:0 0 12px}h3{font-size:16px;margin:18px 0 8px}
+    .muted{color:#52665b}.small{font-size:13px}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+    .button,button{border:1px solid #b4c8bb;background:#f8fbf8;color:#173c2d;border-radius:10px;padding:9px 14px;font-weight:650}
+    button.primary{background:#1a5a40;color:#fff;border-color:#1a5a40}button.danger{border-color:#c9b0a6;color:#733d2e}
+    button:disabled{opacity:.46;cursor:not-allowed}button:focus-visible,input:focus-visible{outline:3px solid #ca8b41;outline-offset:2px}
+    input[type=file]{max-width:100%}input[type=text]{width:min(100%,560px);padding:10px;border:1px solid #b8c6bc;border-radius:8px}
+    progress{width:100%;height:12px;accent-color:#2c7d57}.stats{display:flex;gap:18px;flex-wrap:wrap}.stats strong{font-size:25px;display:block}
+    .source{border-left:4px solid #b89c65;background:#f8f6f0;padding:18px 22px;margin:16px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:18px;line-height:1.65;user-select:text}
+    fieldset{border:1px solid #d8dfd5;border-radius:12px;margin:14px 0;padding:12px 16px}legend{font-weight:700;padding:0 6px}
+    .chips{display:flex;gap:9px;flex-wrap:wrap}.chips label{display:inline-flex;gap:6px;align-items:center;padding:7px 10px;border-radius:8px;background:#f1f5ef}
+    .action{display:flex;gap:8px;align-items:flex-start;border-bottom:1px solid #e6ebe4;padding:8px 0}.action span{flex:1;overflow-wrap:anywhere}
+    #notice{min-height:25px;font-weight:650;color:#734a19}#notice[data-kind=ok]{color:#1b6545}
+    .divider{border-top:1px solid #e1e8df;margin:20px 0}.fileline{display:grid;gap:6px;margin:12px 0}
+    @media(max-width:620px){.stats{display:grid;grid-template-columns:repeat(3,1fr);width:100%;gap:8px}.row>button{flex:1}.source{font-size:16px}}
+  </style>
+</head>
+<body>
+  <header><h1>Revisão local do Laya</h1><p>Confira mensagens de conversas individuais antes de criar anotações. Esta página não faz requisições de rede nem aciona o modelo.</p></header>
+  <main>
+    <section class="panel" aria-labelledby="load-title">
+      <h2 id="load-title">1. Abra a seleção privada</h2>
+      <p class="muted">Escolha o JSON em <code>work/laya-private/revisoes-dm</code>. O arquivo é lido só neste navegador. Grupos não fazem parte desta seleção.</p>
+      <div class="fileline"><label for="selection-file">Arquivo de mensagens para revisão</label><input id="selection-file" type="file" accept=".json,application/json"></div>
+      <div class="fileline"><label for="draft-file">Retomar um progresso salvo (opcional)</label><input id="draft-file" type="file" accept=".json,application/json"></div>
+      <div id="review-scope" class="row" hidden><span id="scope-summary" class="muted small"></span><button id="sample-scope" type="button">Amostra inicial</button><button id="all-scope" type="button">Base completa</button></div>
+      <p id="notice" role="status" aria-live="polite"></p>
+    </section>
+    <section id="workspace" class="panel" hidden aria-labelledby="review-title">
+      <div class="row between"><div><h2 id="review-title">2. Revise uma mensagem</h2><p id="position" class="muted"></p></div><div class="stats" aria-label="Progresso"><div><strong id="included">0</strong> incluídas</div><div><strong id="excluded">0</strong> fora</div><div><strong id="pending">0</strong> pendentes</div></div></div>
+      <progress id="progress" max="1" value="0" aria-label="Mensagens revisadas"></progress>
+      <div class="row between"><p id="context" class="muted small"></p><div class="row"><button id="previous" type="button">Anterior</button><button id="next" type="button">Próxima</button><button id="next-pending" type="button">Próxima pendente</button></div></div>
+      <blockquote id="message" class="source"></blockquote>
+      <fieldset><legend>O que a mensagem contém?</legend>
+        <label class="row"><input id="critical" type="checkbox"> Caso crítico: erro aqui pode gerar ação ou estado comercial indevido</label>
+        <div id="risks" class="chips"></div>
+      </fieldset>
+      <fieldset><legend>Ações exatas na mensagem</legend>
+        <p class="muted small">Selecione o trecho na mensagem ou copie o texto exato para o campo. Pedido é algo solicitado; compromisso é uma promessa da pessoa que escreve.</p>
+        <div class="row"><input id="span" type="text" placeholder="Trecho exato da mensagem" aria-label="Trecho exato"><button id="add-request" type="button">Adicionar pedido</button><button id="add-promise" type="button">Adicionar compromisso</button></div>
+        <div id="actions" aria-live="polite"></div>
+      </fieldset>
+      <label class="row"><input id="rights" type="checkbox"> Conferi este texto e os direitos de uso local desta conversa.</label>
+      <div class="row" style="margin-top:18px"><button id="include" class="primary" type="button">Incluir na revisão</button><button id="exclude" class="danger" type="button">Deixar fora</button></div>
+    </section>
+    <section id="export" class="panel" hidden aria-labelledby="save-title">
+      <h2 id="save-title">3. Salve o trabalho local</h2>
+      <p class="muted">Salve um rascunho para continuar depois. A exportação final contém apenas os itens incluídos e exige sua confirmação; nenhum arquivo sai automaticamente desta máquina.</p>
+      <div class="row"><button id="save-draft" type="button">Salvar progresso</button><label class="row"><input id="owner" type="checkbox"> Sou o titular e revisei os itens incluídos.</label><button id="save-annotations" class="primary" type="button">Exportar anotações</button></div>
+      <p class="small muted">Ao salvar, escolha a pasta privada <code>work/laya-private/revisoes-dm</code>. Esta ferramenta não aprova a qualidade do Laya nem habilita Organizar.</p>
+    </section>
+  </main>
+  <script>
+  (()=>{
+    'use strict';
+    const $=id=>document.getElementById(id),riskNames={condition:'Condição',negation:'Negação',completed:'Já concluído',payment:'Pagamento',acceptance:'Aceite',prompt_injection:'Instrução maliciosa',cancellation:'Cancelamento',uncertainty:'Incerteza',none:'Nenhum desses'};
+    let allItems=[],items=[],index=0,selectionHash='',annotations=new Map(),selectedText='';
+    const notice=(message,kind='error')=>{$('notice').textContent=message;$('notice').dataset.kind=kind;};
+    const hex=bytes=>[...bytes].map(x=>x.toString(16).padStart(2,'0')).join('');
+    const current=()=>items[index];
+    function sampleOf(rows){
+      const byConversation=new Map();
+      for(const item of rows){if(!byConversation.has(item.conversationKey))byConversation.set(item.conversationKey,item);}
+      return [...byConversation.values()].sort((a,b)=>a.conversationKey.localeCompare(b.conversationKey)).slice(0,150);
+    }
+    function scope(mode){
+      remember();items=mode==='all'?allItems:sampleOf(allItems);index=0;
+      $('scope-summary').textContent=mode==='all'?`Base completa: ${items.length} mensagens.`:`Amostra inicial: ${items.length} DMs distintas de ${allItems.length} mensagens. Não é teste cego.`;
+      $('sample-scope').disabled=mode!=='all';$('all-scope').disabled=mode==='all';draw();
+    }
+    const displayDate=value=>{const date=new Date(value);return Number.isFinite(date.valueOf())?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(date):'data não disponível';};
+    const draftFor=item=>annotations.get(item.id)||{status:'pending',critical:false,risks:['none'],actions:[],rightsConfirmed:false};
+    function validNote(item,note){
+      if(!note||typeof note!=='object'||Array.isArray(note)||!['pending','include','exclude'].includes(note.status)||
+        typeof note.critical!=='boolean'||typeof note.rightsConfirmed!=='boolean'||
+        note.status==='include'&&!note.rightsConfirmed||!Array.isArray(note.risks)||!note.risks.length||
+        note.risks.some(r=>!Object.hasOwn(riskNames,r))||note.risks.includes('none')&&note.risks.length>1||
+        !Array.isArray(note.actions)||note.actions.length>8)return false;
+      return note.actions.every(action=>action&&typeof action==='object'&&!Array.isArray(action)&&
+        ['request','promise'].includes(action.type)&&typeof action.span==='string'&&
+        action.span.length>=8&&action.span.length<=300&&item.text.split(action.span).length===2);
+    }
+    function remember(){
+      if(!items.length)return;
+      const item=current(),risks=[...$('risks').querySelectorAll('input:checked')].map(x=>x.value);
+      const old=draftFor(item);
+      annotations.set(item.id,{...old,critical:$('critical').checked,risks:risks.length?risks:['none'],rightsConfirmed:$('rights').checked});
+    }
+    function drawActions(){
+      const box=$('actions');box.replaceChildren();
+      draftFor(current()).actions.forEach((action,n)=>{
+        const row=document.createElement('div');row.className='action';
+        const label=document.createElement('span');label.textContent=(action.type==='request'?'Pedido':'Compromisso')+' · '+action.span;
+        const remove=document.createElement('button');remove.type='button';remove.textContent='Remover';remove.setAttribute('aria-label','Remover ação '+(n+1));
+        remove.onclick=()=>{const draft=draftFor(current());draft.actions.splice(n,1);annotations.set(current().id,draft);drawActions();};
+        row.append(label,remove);box.append(row);
+      });
+    }
+    function draw(){
+      if(!items.length)return;
+      const item=current(),draft=draftFor(item);
+      $('position').textContent=`${index+1} de ${items.length} · ${draft.status==='include'?'Incluída':draft.status==='exclude'?'Fora':'Pendente'}`;
+      $('context').textContent=`${item.author==='self'?'Mensagem sua':'Mensagem recebida'} · ${displayDate(item.receivedAt)} · fonte local ${item.sourceId}`;
+      $('message').textContent=item.text;
+      $('critical').checked=draft.critical;$('rights').checked=draft.rightsConfirmed;$('span').value='';selectedText='';
+      $('risks').querySelectorAll('input').forEach(box=>{box.checked=draft.risks.includes(box.value);});
+      drawActions();$('previous').disabled=index===0;$('next').disabled=index===items.length-1;
+      const values=items.map(item=>draftFor(item)),included=values.filter(x=>x.status==='include').length,excluded=values.filter(x=>x.status==='exclude').length;
+      $('included').textContent=included;$('excluded').textContent=excluded;$('pending').textContent=items.length-included-excluded;
+      $('progress').max=items.length;$('progress').value=included+excluded;
+    }
+    function move(step){remember();index=Math.max(0,Math.min(items.length-1,index+step));draw();}
+    function nextPending(){
+      remember();
+      for(let offset=1;offset<=items.length;offset++){
+        const candidate=(index+offset)%items.length;
+        if(draftFor(items[candidate]).status==='pending'){index=candidate;draw();notice('Próxima mensagem pendente.','ok');return;}
+      }
+      notice('Todas as mensagens receberam uma decisão.','ok');
+    }
+    function addAction(type){
+      remember();const item=current(),span=($('span').value||selectedText).trim();
+      if(span.length<8||span.length>300||item.text.split(span).length!==2){notice('Use um trecho exato, único, de 8 a 300 caracteres.');return;}
+      const draft=draftFor(item);if(draft.actions.length>=8){notice('Esta mensagem já tem oito ações.');return;}
+      draft.actions.push({type,span});annotations.set(item.id,draft);$('span').value='';selectedText='';drawActions();notice('Ação adicionada para sua revisão.','ok');
+    }
+    function decide(status){
+      remember();const item=current(),draft=draftFor(item);
+      if(status==='include'&&!draft.rightsConfirmed){notice('Confirme a leitura e os direitos deste item antes de incluí-lo.');return;}
+      draft.status=status;annotations.set(item.id,draft);notice(status==='include'?'Item incluído.':'Item deixado fora.','ok');
+      if(index<items.length-1)index++;draw();
+    }
+    async function save(name,data){
+      if(typeof window.showSaveFilePicker!=='function'){notice('Este navegador não oferece salvar com escolha de pasta. Abra no Chrome ou Edge atualizado.');return;}
+      try{const handle=await window.showSaveFilePicker({suggestedName:name,types:[{description:'JSON local',accept:{'application/json':['.json']}}]});const writer=await handle.createWritable();await writer.write(JSON.stringify(data,null,2));await writer.close();notice('Arquivo salvo no local que você escolheu.','ok');}
+      catch(error){if(error?.name!=='AbortError')notice('Não foi possível salvar. Confira a pasta escolhida.');}
+    }
+    for(const [key,label] of Object.entries(riskNames)){
+      const wrapper=document.createElement('label'),box=document.createElement('input');box.type='checkbox';box.value=key;
+      box.onchange=()=>{if(key==='none'&&box.checked)$('risks').querySelectorAll('input').forEach(x=>{if(x!==box)x.checked=false;});if(key!=='none'&&box.checked)$('risks').querySelector('input[value=none]').checked=false;remember();};
+      wrapper.append(box,document.createTextNode(label));$('risks').append(wrapper);
+    }
+    $('selection-file').onchange=async event=>{
+      try{
+        const file=event.target.files[0];if(!file)return;const bytes=await file.arrayBuffer();if(bytes.byteLength>20*1024*1024)throw Error('Arquivo muito grande.');
+        const data=JSON.parse(new TextDecoder().decode(bytes));
+        if(data.schema!=='lume-laya-review-selection-v1'||data.dataKind!=='local_dm_unreviewed'||!Array.isArray(data.items)||!data.items.length||data.items.length>5000||
+          data.items.some(x=>!x||typeof x!=='object'||x.channel!=='dm'||x.reviewed!==false||typeof x.id!=='string'||
+            typeof x.personKey!=='string'||typeof x.conversationKey!=='string'||!['self','other'].includes(x.author)||
+            typeof x.text!=='string'||x.text.length<8||x.text.length>2000)||
+          new Set(data.items.map(x=>x.id)).size!==data.items.length)throw Error('Formato de seleção inválido.');
+        allItems=data.items;items=[];index=0;annotations=new Map();selectionHash=hex(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)));
+        $('workspace').hidden=false;$('export').hidden=false;$('review-scope').hidden=false;scope(allItems.length>150?'sample':'all');
+        notice(`${allItems.length} mensagens carregadas; revise a amostra inicial ou escolha a base completa.`,'ok');
+      }catch{allItems=[];items=[];$('workspace').hidden=true;$('export').hidden=true;$('review-scope').hidden=true;notice('Não foi possível abrir esta seleção. Confira o arquivo privado.');}
+    };
+    $('draft-file').onchange=async event=>{
+      try{if(!items.length)throw Error();const file=event.target.files[0];if(!file)return;const data=JSON.parse(await file.text());
+        if(data.schema!=='lume-laya-review-draft-v1'||data.selectionSha256!==selectionHash||!Array.isArray(data.annotations)||data.annotations.length>allItems.length)throw Error();
+        const allowed=new Map(allItems.map(x=>[x.id,x])),seen=new Set(),restored=new Map();
+        for(const entry of data.annotations){
+          if(!Array.isArray(entry)||entry.length!==2||!allowed.has(entry[0])||seen.has(entry[0])||!validNote(allowed.get(entry[0]),entry[1]))throw Error();
+          seen.add(entry[0]);restored.set(entry[0],entry[1]);
+        }
+        annotations=restored;draw();notice('Progresso retomado para esta seleção.','ok');
+      }catch{notice('Rascunho incompatível com a seleção aberta.');}
+    };
+    $('message').onmouseup=$('message').onkeyup=()=>{const value=window.getSelection()?.toString().trim()||'';if(value)selectedText=value;};
+    $('sample-scope').onclick=()=>scope('sample');$('all-scope').onclick=()=>scope('all');
+    $('previous').onclick=()=>move(-1);$('next').onclick=()=>move(1);$('next-pending').onclick=nextPending;$('add-request').onclick=()=>addAction('request');$('add-promise').onclick=()=>addAction('promise');
+    $('include').onclick=()=>decide('include');$('exclude').onclick=()=>decide('exclude');
+    $('save-draft').onclick=()=>{if(!items.length)return;remember();void save('laya-revisao-progresso.json',{schema:'lume-laya-review-draft-v1',selectionSha256:selectionHash,savedAt:new Date().toISOString(),annotations:[...annotations]});};
+    $('save-annotations').onclick=()=>{
+      if(!$('owner').checked){notice('Confirme a revisão do titular antes de exportar.');return;}
+      remember();const selected=allItems.filter(item=>annotations.get(item.id)?.status==='include').map(item=>{
+        const note=annotations.get(item.id);return{id:item.id,personKey:item.personKey,conversationKey:item.conversationKey,channel:item.channel,author:item.author,text:item.text,critical:note.critical,risks:note.risks,actions:note.actions,rightsConfirmed:note.rightsConfirmed};
+      });
+      if(selected.length<3){notice('Inclua pelo menos três mensagens revisadas para exportar.');return;}
+      if(selected.some(item=>!validNote(item,{...item,status:'include'}))){notice('Há anotações inválidas. Revise os itens incluídos.');return;}
+      void save('laya-anotacoes-revisadas.json',{schema:'lume-laya-annotations-v1',purpose:'local-model-improvement',dataKind:'real_authorized',reviewedAt:new Date().toISOString(),approvedByOwner:true,items:selected});
+    };
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('../src/painel/lume-soft-audio.js',import.meta.url),'utf8');
+function fixture({suspended=false}={}){
+  const document=new EventTarget(),window=new EventTarget(),state={som:false,volume:.35,pausado:false},notes=[],gains=[];document.hidden=false;let resume,stops=0;
+  window.AudioContext=class{constructor(){this.state=suspended?'suspended':'running';}currentTime=0;destination={};resume(){return new Promise(r=>resume=()=>{this.state='running';r();});}close(){return Promise.resolve();}createOscillator(){const o={frequency:{setValueAtTime:f=>o.frequencyValue=f},connect(){},disconnect(){},start(){notes.push(o.frequencyValue);},stop(){stops++;o.onended?.();}};return o;}createGain(){return{gain:{setValueAtTime(){},linearRampToValueAtTime:v=>gains.push(v),exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}};
+  vm.runInNewContext(source,{window,document,setTimeout,clearTimeout});const player=window.LumeAudio.criar({estado:()=>state});return{window,document,state,notes,gains,player,resume:()=>resume(),stops:()=>stops};
+}
+test('shared synthesis is silent on import, opt-in and explicit preview',async()=>{const f=fixture();assert.equal(f.notes.length,0);assert.equal((await f.player.tocar('decisao',{previa:true})).tocou,false);f.state.som=true;assert.equal(f.notes.length,0);assert.equal((await f.player.tocar('decisao',{previa:true})).tocou,true);assert.deepEqual(f.notes,[620,930]);assert.equal(f.gains[0],.06*.35);f.player.destruir();});
+test('same operational signature is never replayed',async()=>{const f=fixture();f.state.som=true;assert.equal((await f.player.tocar('conclusao',{assinatura:'source:1'})).tocou,true);assert.equal((await f.player.tocar('conclusao',{assinatura:'source:1'})).tocou,false);assert.equal(f.notes.length,2);f.player.destruir();});
+test('volume changing during resume cancels the old sound',async()=>{const f=fixture({suspended:true});f.state.som=true;const result=f.player.tocar('decisao',{previa:true});f.state.volume=0;f.resume();assert.equal((await result).tocou,false);assert.equal(f.notes.length,0);f.player.destruir();});
+test('hidden, paused and disposed players stay silent',async()=>{const f=fixture();f.state.som=true;f.state.pausado=true;assert.equal((await f.player.tocar('decisao',{previa:true})).tocou,false);f.state.pausado=false;f.document.hidden=true;assert.equal((await f.player.tocar('decisao',{previa:true})).tocou,false);f.document.hidden=false;f.player.destruir();assert.equal((await f.player.tocar('decisao',{previa:true})).tocou,false);assert.equal(f.notes.length,0);});
+test('preference revocation during resume cancels without replay',async()=>{const f=fixture({suspended:true});f.state.som=true;const result=f.player.tocar('decisao',{previa:true});f.window.dispatchEvent(new Event('lume:preferences'));f.resume();assert.equal((await result).tocou,false);assert.equal(f.notes.length,0);f.player.destruir();});

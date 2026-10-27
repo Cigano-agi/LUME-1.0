@@ -1,0 +1,18 @@
+{
+  "schema": "lume-laya-bundle-lock-v1",
+  "tag": "laya-model-beta06-candidate1",
+  "revision": "82d57fc4f2d1be3d2caac494045f2ec51d0842f3",
+  "manifestSha256": "620ec583865d54907d3ca8b035fe074ef81689ca611f0bed0dcfea6d1e756e3d",
+  "assets": [
+    "encoder.onnx",
+    "encoder.onnx.data",
+    "head.onnx",
+    "head.onnx.data",
+    "tokenizer.json",
+    "rl_agent_config.json",
+    "LICENSE",
+    "MODEL-CARD.md",
+    "lume-laya-manifest.json"
+  ],
+  "approvedForActions": false
+}

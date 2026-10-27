@@ -1,0 +1,170 @@
+name: Provar atualizacao assinada
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline_version:
+        description: "Versao beta assinada ja instalada, sem prefixo v"
+        required: true
+        type: string
+      target_version:
+        description: "Versao beta assinada atualmente publicada, sem prefixo v"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lume-update-proof-${{ inputs.target_version }}
+  cancel-in-progress: false
+
+env:
+  BASELINE_VERSION: ${{ inputs.baseline_version }}
+  TARGET_VERSION: ${{ inputs.target_version }}
+  RELEASE_BASE_URL: https://lume.gypsiventures.com/releases/beta
+  LUME_UPDATE_PROOF: AUTORIZADO
+
+jobs:
+  windows:
+    name: Atualizar no Windows preservando o perfil
+    runs-on: windows-2025
+    timeout-minutes: 30
+    environment: release-beta
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Validar par de versoes
+        shell: pwsh
+        run: node scripts/release-update-proof.mjs check-versions --baseline-version $env:BASELINE_VERSION --target-version $env:TARGET_VERSION
+      - name: Baixar e validar a versao base assinada
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force 'work/release-update-proof' | Out-Null
+          $manifest = Join-Path $env:RUNNER_TEMP 'beta.yml'
+          Invoke-WebRequest "$env:RELEASE_BASE_URL/beta.yml" -OutFile $manifest
+          $expected = [Regex]::Escape($env:TARGET_VERSION)
+          if ((Get-Content -Raw $manifest) -notmatch "(?m)^version:\s*['`\"]?$expected['`\"]?\s*$") { throw 'O canal beta nao aponta para a versao alvo.' }
+          $name = "Lume-$env:BASELINE_VERSION-win-x64-Setup.exe"
+          $installer = Join-Path $env:RUNNER_TEMP $name
+          Invoke-WebRequest "$env:RELEASE_BASE_URL/$name" -OutFile $installer
+          $baselineManifestDir = Join-Path $env:RUNNER_TEMP 'baseline-manifest'
+          New-Item -ItemType Directory -Force $baselineManifestDir | Out-Null
+          $baselineManifest = Join-Path $baselineManifestDir 'beta.yml'
+          Invoke-WebRequest "$env:RELEASE_BASE_URL/manifests/$env:BASELINE_VERSION/beta.yml" -OutFile $baselineManifest
+          if ((Get-AuthenticodeSignature -LiteralPath $installer).Status -ne 'Valid') { throw 'A assinatura Authenticode da versao base e invalida.' }
+          "LUME_BASELINE_ARTIFACT=$installer" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "LUME_BASELINE_MANIFEST=$baselineManifest" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Instalar a versao base no runner descartavel
+        shell: pwsh
+        run: |
+          Start-Process -FilePath $env:LUME_BASELINE_ARTIFACT -ArgumentList '/S' -Wait
+          Start-Sleep -Seconds 5
+          Get-Process -Name Lume -ErrorAction SilentlyContinue | Stop-Process -Force
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs/Lume/Lume.exe'
+          if (-not (Test-Path -LiteralPath $exe)) { throw 'Executavel instalado da versao base ausente.' }
+          "LUME_BASELINE_EXECUTABLE=$exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Exercitar download, reinicio e preservacao
+        shell: pwsh
+        run: node test/release-update-native.e2e.mjs --baseline-version $env:BASELINE_VERSION --target-version $env:TARGET_VERSION --channel beta --executable $env:LUME_BASELINE_EXECUTABLE --output work/release-update-proof/windows-observation.json
+      - name: Validar alvo e fechar prova tecnica
+        shell: pwsh
+        run: |
+          if ((Get-AuthenticodeSignature -LiteralPath $env:LUME_BASELINE_EXECUTABLE).Status -ne 'Valid') { throw 'A assinatura Authenticode da versao alvo e invalida.' }
+          node scripts/release-update-proof.mjs finalize --input work/release-update-proof/windows-observation.json --output work/release-update-proof/windows-proof.json --baseline-artifact $env:LUME_BASELINE_ARTIFACT --baseline-manifest $env:LUME_BASELINE_MANIFEST --target-executable $env:LUME_BASELINE_EXECUTABLE --baseline-signature VERIFICADO --target-signature VERIFICADO --notarization NA
+          node scripts/release-update-proof.mjs validate --input work/release-update-proof/windows-proof.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lume-update-proof-windows-${{ github.run_id }}
+          path: work/release-update-proof/*.json
+          if-no-files-found: error
+          retention-days: 7
+
+  macos:
+    name: Atualizar no Mac ${{ matrix.architecture }} preservando o perfil
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: arm64
+            runner: macos-15
+            uname_arch: arm64
+          - architecture: x64
+            runner: macos-15-intel
+            uname_arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    environment: release-beta
+    env:
+      TMPDIR: /private/tmp
+      MAC_ARCHITECTURE: ${{ matrix.architecture }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Confirmar runner nativo
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "${{ matrix.uname_arch }}"
+          node -e "if(process.platform!=='darwin'||process.arch!==process.env.MAC_ARCHITECTURE)process.exit(1)"
+      - name: Validar par de versoes
+        run: node scripts/release-update-proof.mjs check-versions --baseline-version "$BASELINE_VERSION" --target-version "$TARGET_VERSION"
+      - name: Baixar e validar a versao base universal assinada
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p work/release-update-proof
+          curl --fail --silent --show-error "$RELEASE_BASE_URL/beta-mac.yml" -o "$RUNNER_TEMP/beta-mac.yml"
+          TARGET_VERSION="$TARGET_VERSION" node -e 'const fs=require("fs");const v=process.env.TARGET_VERSION.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");if(!new RegExp(`^version:\\s*["\x27]?${v}["\x27]?\\s*$`,"m").test(fs.readFileSync(process.argv[1],"utf8")))process.exit(1)' "$RUNNER_TEMP/beta-mac.yml"
+          name="Lume-${BASELINE_VERSION}-mac-universal.dmg"
+          artifact="$RUNNER_TEMP/$name"
+          curl --fail --silent --show-error "$RELEASE_BASE_URL/$name" -o "$artifact"
+          mkdir -p "$RUNNER_TEMP/baseline-manifest"
+          baseline_manifest="$RUNNER_TEMP/baseline-manifest/beta-mac.yml"
+          curl --fail --silent --show-error "$RELEASE_BASE_URL/manifests/$BASELINE_VERSION/beta-mac.yml" -o "$baseline_manifest"
+          mount="$RUNNER_TEMP/lume-baseline-dmg"
+          mkdir -p "$mount"
+          hdiutil attach -nobrowse -readonly -mountpoint "$mount" "$artifact"
+          trap 'hdiutil detach "$mount" >/dev/null 2>&1 || true' EXIT
+          test -d "$mount/Lume.app"
+          rm -rf "$RUNNER_TEMP/Lume.app"
+          ditto "$mount/Lume.app" "$RUNNER_TEMP/Lume.app"
+          hdiutil detach "$mount"
+          trap - EXIT
+          app="$RUNNER_TEMP/Lume.app"
+          arches=" $(lipo -archs "$app/Contents/MacOS/Lume") "
+          [[ "$arches" == *" arm64 "* ]]
+          [[ "$arches" == *" x86_64 "* ]]
+          codesign --verify --deep --strict --verbose=2 "$app"
+          spctl --assess --type execute --verbose=2 "$app"
+          xcrun stapler validate "$app"
+          node test/macos-universal-native.mjs --app "$app" --architecture "$MAC_ARCHITECTURE"
+          echo "LUME_BASELINE_ARTIFACT=$artifact" >> "$GITHUB_ENV"
+          echo "LUME_BASELINE_MANIFEST=$baseline_manifest" >> "$GITHUB_ENV"
+          echo "LUME_BASELINE_EXECUTABLE=$app/Contents/MacOS/Lume" >> "$GITHUB_ENV"
+      - name: Exercitar download, reinicio e preservacao
+        run: node test/release-update-native.e2e.mjs --baseline-version "$BASELINE_VERSION" --target-version "$TARGET_VERSION" --channel beta --executable "$LUME_BASELINE_EXECUTABLE" --output "work/release-update-proof/macos-$MAC_ARCHITECTURE-observation.json"
+      - name: Validar alvo e fechar prova tecnica
+        shell: bash
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/Lume.app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          spctl --assess --type execute --verbose=2 "$app"
+          xcrun stapler validate "$app"
+          node scripts/release-update-proof.mjs finalize --input "work/release-update-proof/macos-$MAC_ARCHITECTURE-observation.json" --output "work/release-update-proof/macos-$MAC_ARCHITECTURE-proof.json" --baseline-artifact "$LUME_BASELINE_ARTIFACT" --baseline-manifest "$LUME_BASELINE_MANIFEST" --target-executable "$LUME_BASELINE_EXECUTABLE" --baseline-signature VERIFICADO --target-signature VERIFICADO --notarization VERIFICADO
+          node scripts/release-update-proof.mjs validate --input "work/release-update-proof/macos-$MAC_ARCHITECTURE-proof.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lume-update-proof-macos-${{ matrix.architecture }}-${{ github.run_id }}
+          path: work/release-update-proof/*.json
+          if-no-files-found: error
+          retention-days: 7

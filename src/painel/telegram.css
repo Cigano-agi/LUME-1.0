@@ -1,0 +1,4 @@
+@media (max-width:600px) {
+  #telegram-hoje-panel { padding-bottom:110px; }
+  #telegram-hoje-save, #telegram-hoje-disable { scroll-margin-bottom:110px; }
+}

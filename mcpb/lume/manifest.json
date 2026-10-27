@@ -1,0 +1,68 @@
+{
+  "manifest_version": "0.3",
+  "name": "com.readyworks.lume.local-memory",
+  "display_name": "Lume — memória local",
+  "version": "3.2.0-beta.8",
+  "description": "Consulta suas conversas permitidas no Lume com fontes verificáveis.",
+  "long_description": "O Lume oferece ao Claude cinco ferramentas somente leitura para resumir o dia, buscar contexto, conferir uma fonte, listar pendências e acompanhar negócios. O histórico permanece no computador; apenas os trechos pedidos pelo Claude são enviados ao provedor.",
+  "author": {
+    "name": "ReadyWorks"
+  },
+  "icon": "icon.png",
+  "privacy_policies": [
+    "https://lume-crm-fawn.vercel.app/#controle"
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ],
+      "env": {
+        "LUME_MCP_CREDENTIAL": "${user_config.activation_code}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "lume_resumo_do_dia",
+      "description": "Resume o dia usando somente fontes permitidas."
+    },
+    {
+      "name": "lume_buscar_contexto",
+      "description": "Busca contexto nas conversas permitidas."
+    },
+    {
+      "name": "lume_abrir_fonte",
+      "description": "Confere uma fonte devolvida pelo Lume."
+    },
+    {
+      "name": "lume_listar_pendencias",
+      "description": "Lista próximos passos com suas fontes."
+    },
+    {
+      "name": "lume_listar_negocios",
+      "description": "Lista negócios atuais com suas fontes."
+    }
+  ],
+  "compatibility": {
+    "platforms": [
+      "darwin",
+      "win32"
+    ],
+    "runtimes": {
+      "node": ">=24.0.0"
+    }
+  },
+  "user_config": {
+    "activation_code": {
+      "type": "string",
+      "title": "Código mostrado pelo Lume",
+      "description": "No Lume, abra Ajustes → Usar com assistente e copie o código temporário.",
+      "sensitive": true,
+      "required": true
+    }
+  }
+}

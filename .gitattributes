@@ -1,0 +1,24 @@
+# Preserve exact bytes of the frozen, synthetic context evaluation across platforms.
+/test/fixtures/contexto-probe-01.json text eol=lf
+/docs/beta-06/evidencias-contexto/probe-01.json text eol=lf
+# Reproduce the exact source bytes recorded by the local synthesis experiment.
+/scripts/sintese-probe.mjs text eol=lf
+/scripts/sintese-supervisor.mjs text eol=lf
+/scripts/sintese-smoke.mjs text eol=lf
+/scripts/lib/sintese-local-runtime.mjs text eol=lf
+/scripts/lib/sintese-prompt.mjs text eol=lf
+/scripts/lib/sintese-termino.mjs text eol=lf
+/scripts/contexto-probe.mjs text eol=lf
+/src/sintese-contexto/contrato.js text eol=lf
+/docs/beta-06/sintese-model-lock.json text eol=lf
+/test/fixtures/sintese-probe-01.json text eol=lf
+/docs/beta-06/evidencias-sintese/*.json text eol=lf
+# Keep the wave 7 research receipts and source snapshots byte-stable on Windows.
+/docs/beta-06/evidencias-sintese/wave07/*.json text eol=lf
+/docs/beta-06/evidencias-ui/wave07/*.json text eol=lf
+/scripts/sintese-dev-*.mjs text eol=lf
+/scripts/lib/sintese-dev-*.mjs text eol=lf
+/scripts/sintese-fatos-diagnostico.mjs text eol=lf
+/scripts/lib/sintese-fatos-diagnostico.mjs text eol=lf
+/test/sintese-dev-composicao.test.js text eol=lf
+/test/sintese-fatos-diagnostico.test.js text eol=lf

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lume Central</title><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/central/central.css"><script src="/central/central.js" defer></script></head>
+<body>
+  <header><a href="/" class="brand"><span>✳</span> lume</a><span class="pill">CENTRAL DO BETA</span></header>
+  <main>
+    <section id="login" class="login-card">
+      <p class="eyebrow">ACESSO PRIVADO</p><h1>Acompanhe o beta.</h1><p>Veja quem instalou, qual versão está usando e quando o Lume apareceu pela última vez.</p>
+      <form id="login-form"><label for="senha">Senha da central</label><input id="senha" type="password" autocomplete="current-password" required><button>Entrar →</button></form><p id="login-error" role="alert"></p>
+    </section>
+    <section id="dashboard" hidden>
+      <div class="heading"><div><p class="eyebrow">OPERAÇÃO DO PRODUTO</p><h1>Instalações do Lume</h1><p id="updated" class="muted"></p></div><button id="refresh" class="secondary">↻ Atualizar</button></div>
+      <div class="stats"><article><span>Pulso recente</span><strong id="active">0</strong></article><article><span>Somente feedback</span><strong id="feedback-only">0</strong></article><article><span>Desatualizadas</span><strong id="old">0</strong></article><article><span>Sem pulso recente</span><strong id="silent">0</strong></article><article><span>Com erro</span><strong id="errors">0</strong></article></div>
+      <section class="panel invite"><div><p class="eyebrow">NOVO TESTER</p><h2>Criar convite</h2><p>O código liga uma pessoa a uma instalação. Ele aparece uma vez.</p></div><form id="invite-form"><label for="label">Nome da pessoa</label><div class="row"><input id="label" maxlength="80" placeholder="Ex.: Diogo Kaleo" required><button>Criar código</button></div></form><div id="invite-result" class="invite-result" hidden><span>Código do convite</span><code id="invite-code"></code><button id="copy" class="secondary" type="button">Copiar</button></div></section>
+      <section class="panel"><div class="table-head"><div><p class="eyebrow">VERSÕES REGISTRADAS</p><h2>Pessoas e computadores</h2></div><label>Mostrar<select id="filter"><option value="">Todos</option><option value="apenas_feedback">Somente feedback</option><option value="desatualizado">Desatualizados</option><option value="sem_contato">Sem pulso recente</option><option value="erro_atualizacao">Com erro</option><option value="revogada">Revogadas</option></select></label></div><div class="table-wrap"><table><thead><tr><th>Pessoa</th><th>Sistema</th><th>Versão</th><th>Último registro</th><th>Estado</th></tr></thead><tbody id="rows"></tbody></table><p id="empty" class="empty" hidden>Nenhuma instalação encontrada.</p></div></section>
+      <section class="panel feedback-panel" aria-labelledby="feedback-title">
+        <div class="table-head"><div><p class="eyebrow">RETORNO DOS TESTADORES</p><h2 id="feedback-title">Feedback recebido <span id="feedback-total" class="feedback-count">0</span></h2><p class="muted">Relatos enviados por escolha da pessoa, ligados ao convite e à versão.</p></div><button id="feedback-export" class="secondary" type="button">Exportar filtro</button></div>
+        <div class="feedback-filters">
+          <label>Etapa<select id="feedback-stage"><option value="">Todas</option><option value="onboarding">Primeiro acesso</option><option value="hoje">Hoje</option><option value="conexao">Conexão</option><option value="organiza">Organizar</option><option value="ajustes">Ajustes</option></select></label>
+          <label>Prioridade<select id="feedback-severity"><option value="">Todas</option><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></select></label>
+          <label>Estado<select id="feedback-state"><option value="">Todos</option><option value="novo">Novo</option><option value="em_analise">Em análise</option><option value="resolvido">Resolvido</option></select></label>
+          <label>Versão<select id="feedback-version"><option value="">Todas</option></select></label>
+          <label>Sistema<select id="feedback-platform"><option value="">Todos</option><option value="win32">Windows</option><option value="darwin">macOS</option></select></label>
+        </div>
+        <div id="feedback-rows" class="feedback-list"></div><p id="feedback-empty" class="empty">Nenhum feedback neste filtro.</p><div class="feedback-pages"><button id="feedback-prev" class="secondary" type="button" disabled>Anterior</button><span id="feedback-page-label">Página 1</span><button id="feedback-next" class="secondary" type="button" disabled>Próxima</button></div><p id="feedback-status" role="status" aria-live="polite"></p>
+      </section>
+      <p id="central-status" role="alert"></p><p class="privacy">A central guarda dados de operação e os relatos enviados voluntariamente. Conversas, contatos, arquivos e memória continuam na máquina de cada pessoa.</p>
+    </section>
+  </main>
+</body></html>

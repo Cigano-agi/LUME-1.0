@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Lume</title>
+  <style>@media(prefers-color-scheme:dark){.ghost-outline{stroke:#f5d46b}}</style><defs><linearGradient id="body" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#fff8cf"/><stop offset=".6" stop-color="#f4dc83"/><stop offset="1" stop-color="#d9b754"/></linearGradient></defs>
+  <path d="M13 33C11 18 19 7 32 7C46 6 53 17 52 32L53 48C53 54 49 56 45 52C43 50 42 50 39 53C36 56 33 55 30 52C28 50 26 50 24 53C21 56 18 54 16 52C14 49 10 54 11 47Z" class="ghost-outline" fill="url(#body)" stroke="#b89437" stroke-width="1.4"/>
+  <path d="M20 23C21 16 26 12 32 12" fill="none" stroke="#fffdf1" stroke-width="2.7" stroke-linecap="round"/>
+  <ellipse cx="25" cy="30" rx="2.4" ry="3.6" fill="#36372c"/><ellipse cx="40" cy="30" rx="2.4" ry="3.6" fill="#36372c"/>
+  <circle cx="25.6" cy="29" r=".7" fill="#fffdf1"/><circle cx="40.6" cy="29" r=".7" fill="#fffdf1"/>
+  <path d="M29 39Q33 42 37 38.5" fill="none" stroke="#62532c" stroke-width="1.6" stroke-linecap="round"/>
+</svg>

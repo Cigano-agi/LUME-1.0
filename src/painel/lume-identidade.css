@@ -1,0 +1,21 @@
+/* Humanist type, resolved entirely on this computer. No CDN or font download. */
+@font-face {font-family:'Lume Humanista';src:local('Segoe UI');font-style:normal;font-weight:400;font-display:swap}
+@font-face {font-family:'Lume Humanista';src:local('Segoe UI Semibold');font-style:normal;font-weight:600 700;font-display:swap}
+@font-face {font-family:'Lume Humanista';src:local('Segoe UI Bold');font-style:normal;font-weight:800 900;font-display:swap}
+:root {
+  --lume-font-humanista:'Lume Humanista','Avenir Next','Segoe UI',sans-serif;
+  --lume-attendance-accent:#285c47;--lume-attendance-selection:#eef3ed;
+  --lume-attendance-state:#4f5d54;--lume-attendance-outline:#567866;
+}
+html[data-theme=dark] {
+  --lume-attendance-accent:#c4dfcb;--lume-attendance-selection:#2b3b30;
+  --lume-attendance-state:#ccd6cd;--lume-attendance-outline:#a8c9b2;
+}
+html .workspace.desk06,
+html .workspace.desk06 :is(button,input,select,textarea) {font-family:var(--lume-font-humanista);font-synthesis:none}
+html .workspace.desk06 :is(h1,h2,h3,h4) {font-family:var(--lume-font-humanista);font-weight:650;letter-spacing:-.025em;line-height:1.2}
+html .workspace.desk06 #pessoal-panel {font-size:15px;line-height:1.6}
+@media(prefers-contrast:more) {
+  :root {--lume-attendance-accent:#0d3924;--lume-attendance-selection:#e5eee6;--lume-attendance-state:#15291c;--lume-attendance-outline:#173722}
+  html[data-theme=dark] {--lume-attendance-accent:#e4ffe8;--lume-attendance-selection:#172c1d;--lume-attendance-state:#fff;--lume-attendance-outline:#fff}
+}

@@ -1,0 +1,37 @@
+{
+  "origin": "https://github.com/lauridskern/open-runde",
+  "revision": "3e7ed7f3cdfa5523766db7e430066472615fc935",
+  "license": "OFL-1.1",
+  "files": [
+    {
+      "file": "open-runde-regular.woff2",
+      "url": "https://raw.githubusercontent.com/lauridskern/open-runde/3e7ed7f3cdfa5523766db7e430066472615fc935/src/web/OpenRunde-Regular.woff2",
+      "bytes": 154604,
+      "sha256": "da42a03569a63e4ae09ea2943bd530fce8bbf72ea4609618232c86f54c705e76"
+    },
+    {
+      "file": "open-runde-medium.woff2",
+      "url": "https://raw.githubusercontent.com/lauridskern/open-runde/3e7ed7f3cdfa5523766db7e430066472615fc935/src/web/OpenRunde-Medium.woff2",
+      "bytes": 165396,
+      "sha256": "169d786a5984c8a9d6f5ee4b019ae882a3a2e9896a44e2c28f8d5b9bab12555e"
+    },
+    {
+      "file": "open-runde-semibold.woff2",
+      "url": "https://raw.githubusercontent.com/lauridskern/open-runde/3e7ed7f3cdfa5523766db7e430066472615fc935/src/web/OpenRunde-Semibold.woff2",
+      "bytes": 162732,
+      "sha256": "51bb1591ab0b4b4c423165ce00b424293e0d87839a3b22027077b03323c097ae"
+    },
+    {
+      "file": "open-runde-bold.woff2",
+      "url": "https://raw.githubusercontent.com/lauridskern/open-runde/3e7ed7f3cdfa5523766db7e430066472615fc935/src/web/OpenRunde-Bold.woff2",
+      "bytes": 162468,
+      "sha256": "9a64eabe53890050c4606ca2def75c0f7b78e5bfb1e45b1ee59951f30ceae79a"
+    },
+    {
+      "file": "open-runde-OFL.txt",
+      "url": "https://raw.githubusercontent.com/lauridskern/open-runde/3e7ed7f3cdfa5523766db7e430066472615fc935/LICENSE.txt",
+      "bytes": 4380,
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
+    }
+  ]
+}
