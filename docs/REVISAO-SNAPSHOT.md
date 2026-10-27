@@ -75,3 +75,7 @@ A revisão independente conferiu o arquivo de recuperação, todos os 29.236 has
 Somente a fonte do cofre é exceção de produto frente ao snapshot inicial: bytes iguais ao objeto Git `14dd9f17`, equivalentes por EOL à versão exercitada nos 47 testes independentes. As duas alterações de teste são a contagem explícita do catálogo e o novo conjunto de limpeza. Os demais deltas são documentais. Regressão ampla parcial, focais e limites de avaliação real permanecem identificados sem reclassificação retroativa.
 
 O recibo privado `snapshot-review-final-delta.json` registra lista fechada de arquivos autorizados, hashes, conferência da base, links locais e verificação dos oito artefatos preparados. Provas privadas não foram incorporadas ao novo Git. Nenhuma alteração de índice, commit ou push foi executada por este revisor. Novos envios e mudança de estado da instalação exigem recibos próprios.
+
+## Confirmação posterior do segundo push
+
+O recibo privado `github-second-push.json` registra o envio de **`35c290cdaa6412d12faf9c8e21ef81d8d9fa4e3e`**, com 1.045 arquivos. A revisão consultou independentemente a API: `main` aponta para esse commit, o repositório permanece privado e Actions está desativado. Assim, as referências acima ao segundo envio pendente descrevem o corte anterior, já superado por essa prova. Este complemento factual é posterior ao envio confirmado e requer recibo próprio; não muda o estado parcial do produto, a instalação beta.8 bloqueada ou os gates pendentes.

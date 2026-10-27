@@ -30,11 +30,13 @@ A verificação editorial anterior registrou **cinco capturas e 55 links**; pert
 
 O recibo `candidate-native/evidence.json`, de **06:45:58–06:46:05 UTC**, registra aprovação da candidata empacotada em perfil sintético isolado: **duas inicializações e saídas normais**, preferências preservadas, atividade disponível e desligada, companhia sem eventos de foco observados e **três capturas**. O executável permaneceu sem alterações; foram usados DOM e observadores somente leitura, sem patches de `show`/`focus`. Isso não afirma que a janela principal nunca recebe foco. A captura do onboarding foi feita durante uma transição de opacidade e não serve como prova de contraste. O ensaio não comprova instalação nem fonte real no perfil pessoal. Detalhes em [distribuição desktop](DESKTOP.md).
 
-## Primeiro push e procedência
+## Envios confirmados e procedência
 
 O recibo privado `github-first-push.json` confirma, em **27/10/2026 às 06:21:32 UTC**, o primeiro push para **Cigano-agi/LUME-1.0**, repositório privado, branch **main**, commit **`f6405c5f7f608c9d482091e5e3606bfab12d9c80`**, com **Actions desligado**. Foram conferidos os blobs remotos de quatro arquivos: README e os PNGs de banner, percurso e expressões. Esse recibo comprova o envio inicial; não comprova que alterações documentais ou correções posteriores já foram enviadas.
 
-O produto-base vem de **`3d2ee026bcc3becabd85dfc31a4e9e9ee217cd5f`** na origem. Os complementos **`be17e53`** (teste de versão) e **`941e3d1`** (expectativa do catálogo) são correções de teste. A fonte atual inclui também a exceção de segurança **`14dd9f1`**, em `desktop/segredos.cjs`, e seu novo teste. Ambos foram copiados para o snapshot; o **segundo push está pendente** neste corte. A contagem anterior de fontes inalteradas descreve somente a revisão anterior a essa exceção. O commit inicial `f6405c5` continua sendo a prova histórica do primeiro envio. O snapshot começa sem importar a ancestralidade anterior por curadoria de privacidade. O repositório original, seu histórico, arquivos e worktrees foram preservados.
+O **segundo push foi confirmado** em **27/10/2026 às 06:54:39 UTC**, pelo recibo privado `github-second-push.json`: commit **`35c290cdaa6412d12faf9c8e21ef81d8d9fa4e3e`**, 1.045 arquivos, confirmação remota por Git/API e conferência dos blobs do README e dos três PNGs. O repositório permanece privado e Actions desligado. Esse é o **último envio comprovado neste registro**; estas notas documentais posteriores pertencem à mesma linhagem e não declaram outro envio. O push não comprova instalação, distribuição pública ou aceite.
+
+O produto-base vem de **`3d2ee026bcc3becabd85dfc31a4e9e9ee217cd5f`** na origem. Os complementos **`be17e53`** (teste de versão) e **`941e3d1`** (expectativa do catálogo) são correções de teste. A fonte atual inclui também a exceção de segurança **`14dd9f1`**, em `desktop/segredos.cjs`, e seu novo teste. Ambos integram o segundo envio confirmado, **`35c290c`**. A contagem anterior de fontes inalteradas descreve somente a revisão anterior a essa exceção. O commit inicial `f6405c5` continua sendo a prova histórica do primeiro envio. O snapshot começa sem importar a ancestralidade anterior por curadoria de privacidade. O repositório original, seu histórico, arquivos e worktrees foram preservados.
 
 ## Recuperação e limites ainda abertos
 
@@ -50,7 +52,6 @@ Continuam sem conclusão neste registro:
 
 - Conclusão da validação integrada além dos recortes focais registrados, preservando as falhas históricas.
 - Instalação beta.8 bloqueada pela política de execução do script; abertura/reinício e fonte real na GUI instalada não foram executados. O ensaio isolado e a saída zero do build não comprovam instalação.
-- Segundo push com a correção de segurança, testes e documentação posteriores ao envio inicial.
 - Coleta positiva real de aplicativo ativo, abertura pela busca do Windows e fixação na barra por mecanismo permitido.
 - Qualidade semântica com mensagens autorizadas: a conta existente atingiu cota; o histórico permanece fechado até avaliação aprovada. Não houve novo pareamento, conta ou modelo para superar esse limite.
 - Conexão WhatsApp, aceite humano de utilidade, execução nativa no macOS e máquina física de 8 GB.
