@@ -2,12 +2,15 @@
 
 Corte documental de **27/10/2026**, após o primeiro push privado, os testes focais de restauração/cofre, a revisão do backup operacional 02 e o ensaio nativo da candidata. Versão comercial **1.0**, técnica **3.2.0-beta.8**. A candidata `D0jpBX`, congelada em `14dd9f1`, e o instalador NSIS estão preparados; o ensaio isolado da candidata passou. A recuperação foi aprovada independentemente. **A instalação beta.8 está bloqueada pela política de execução de scripts do PowerShell, antes do NSIS; a instalada permanece beta.7.** Este registro não declara conclusão ou aceite geral.
 
+**Atualização de QA às 07:29:39 UTC:** a rodada 03 terminou com **1.079/1.079 testes aprovados em 112 arquivos**, no checkout limpo `830111f609861301adf998455ca0a920d9557b80`. Não houve falha, cancelamento, skip ou todo. Esse resultado cobre a seleção do manifesto, não todos os testes possíveis do repositório. A revisão independente aprovou esse recorte, conferindo log, comando e hashes dos arquivos; o bloqueio da instalação Windows permanece aberto.
+
 ## Regressão e verificações focais
 
 | Execução | Resultado comprovado | Alcance e pendência |
 | --- | --- | --- |
 | Regressão 01 | 919 testes, 910 aprovados e nove falhas | As nove falhas envolveram fixtures. Após sua correção, a repetição independente dos quatro arquivos pertinentes passou em 28/28. Isso não reclassifica a execução inicial como aprovada. |
 | Regressão 02 | 111 arquivos; 1.063 testes, 1.059 aprovados, três falhas e um cancelamento; 1.564.429 ms | Execução concluída com resultado não aprovado. Os logs originais permanecem preservados. |
+| Regressão 03 | 112 arquivos; 1.079/1.079 aprovados; zero falha, cancelamento, skip ou todo; 1.507.182,4393 ms no test runner | Checkout limpo `830111f`, dependências próprias e saída zero. Escopo limitado aos arquivos do manifesto; não comprova instalação. |
 | Catálogo de backup | Expectativa de 87 tabelas diante de 88; correção `941e3d1` | A tabela de atividade tem exclusão declarada no catálogo. Correção do teste repetida independentemente: 1/1 aprovado. |
 | Snapshot curado | Oito arquivos, 46/46 testes focais aprovados independentemente | Confere o recorte selecionado; não substitui a regressão completa nem a instalação. |
 | Timer de restauração, primeira repetição focal | 1/1 aprovado; 3.989 ms após o timer | Recorte posterior à falha ampla, sem apagar o resultado anterior. |
@@ -17,6 +20,12 @@ Corte documental de **27/10/2026**, após o primeiro push privado, os testes foc
 Na regressão 02, a validação agregada de restauração atingiu o limite CLI de **180 segundos**. O caso do timer respondeu em **6.663 ms**, acima do critério de **5.000 ms**. O teste do cofre encontrou **EPERM em rename** de um arquivo temporário sintético. A contagem do catálogo também divergiu. Esses registros distinguem timeout, falha de critério temporal, operação de arquivo e expectativa desatualizada; não estabelecem uma causa comum.
 
 O focal 02 concluiu a validação agregada com suas 15 mutações e casos positivos em **216.338,478 ms**, demonstrando que o teto CLI anterior de 180 segundos interrompia esse agregado. O timer voltou a cumprir o critério em **3.354 ms**. A regressão ampla permanece registrada com seu resultado original; o focal não a reclassifica nem comprova desempenho em outras condições.
+
+Na rodada 03, a validação agregada concluiu em **207.860,6422 ms** e a resposta após o timer levou **3.273 ms**, abaixo do critério de 5.000 ms. Foi removido somente o limite CLI global de 180 segundos usado na rodada 02; os testes não foram editados para esta repetição. A duração externa registrada pelo supervisor foi de 1.507.350 ms, distinta dos 1.507.182,4393 ms do test runner. Os **1.045 arquivos rastreados mantiveram seus hashes**, sem alterações ou pendências no checkout ao fim da execução.
+
+O novo checkout usou dependências próprias, instaladas com `npm ci --ignore-scripts`. A tentativa offline anterior falhou com **ENOTCACHED para zod**, e seu log foi preservado; a instalação seguinte não foi offline e concluiu. O runtime Electron **44.4.1** veio do ZIP em cache, SHA-256 `34bc07977d6c43b6514b956a5f2e3292255daa3838a49e6110f3fe19ffafb83f`, com 73 arquivos conferidos. O helper ACL foi recompilado e o patch de Baileys aplicado nesse ambiente de teste. Essa preparação não alterou a aplicação instalada.
+
+Provas privadas da rodada 03 em `work/lume-soft-20261027/`: `regression-03-manifest.json`, `regression-03-result.json`, `regression-03.log`, `regression-03-runtime.json`, `regression-03-setup.log` e `regression-03-setup-offline-failed.log`. O manifesto fixa os 112 arquivos e o checkout; o recibo final registra saída zero, `trackedChanged:[]` e estado Git limpo. As rodadas 01/02 e os focais anteriores continuam preservados como execuções distintas.
 
 A investigação encontrou um temporário órfão no cofre. O critério foi registrado em DONE antes da edição de `desktop/segredos.cjs`. A correção **`14dd9f1`** remove temporários em `finally`, apaga o temporário antes do destino na operação de remoção e usa `unlink` direto, ignorando somente **ENOENT**. Outras falhas são propagadas e impedem sucesso. O conjunto inicial registrou **13 falhas**; a revisão intermediária registrou **15/16**, expondo o uso insuficiente de `existsSync`. A versão final passou em **16/16**; a revisão independente conjunta de cofre e ChatGPT passou em **47/47**, sem skip ou cancelamento. A limpeza ainda pode ser recusada pelo sistema operacional, mas essa recusa não é reportada como sucesso. O focal de restauração/cofre já usava o primeiro ajuste do cofre e não libera retroativamente a fonte anterior.
 
@@ -34,7 +43,7 @@ O recibo `candidate-native/evidence.json`, de **06:45:58–06:46:05 UTC**, regis
 
 O recibo privado `github-first-push.json` confirma, em **27/10/2026 às 06:21:32 UTC**, o primeiro push para **Cigano-agi/LUME-1.0**, repositório privado, branch **main**, commit **`f6405c5f7f608c9d482091e5e3606bfab12d9c80`**, com **Actions desligado**. Foram conferidos os blobs remotos de quatro arquivos: README e os PNGs de banner, percurso e expressões. Esse recibo comprova o envio inicial; não comprova que alterações documentais ou correções posteriores já foram enviadas.
 
-O **segundo push foi confirmado** em **27/10/2026 às 06:54:39 UTC**, pelo recibo privado `github-second-push.json`: commit **`35c290cdaa6412d12faf9c8e21ef81d8d9fa4e3e`**, 1.045 arquivos, confirmação remota por Git/API e conferência dos blobs do README e dos três PNGs. O repositório permanece privado e Actions desligado. Esse é o **último envio comprovado neste registro**; estas notas documentais posteriores pertencem à mesma linhagem e não declaram outro envio. O push não comprova instalação, distribuição pública ou aceite.
+O **segundo push foi confirmado** em **27/10/2026 às 06:54:39 UTC**, pelo recibo privado `github-second-push.json`: commit **`35c290cdaa6412d12faf9c8e21ef81d8d9fa4e3e`**, 1.045 arquivos, confirmação remota por Git/API e conferência dos blobs do README e dos três PNGs. O envio documental seguinte, **`830111f609861301adf998455ca0a920d9557b80`**, está confirmado em `github-final-push.json` e na revisão remota independente. O repositório permanece privado e Actions desligado. O complemento QA03 é posterior a esse último envio comprovado e depende de recibo próprio. O push não comprova instalação, distribuição pública ou aceite.
 
 O produto-base vem de **`3d2ee026bcc3becabd85dfc31a4e9e9ee217cd5f`** na origem. Os complementos **`be17e53`** (teste de versão) e **`941e3d1`** (expectativa do catálogo) são correções de teste. A fonte atual inclui também a exceção de segurança **`14dd9f1`**, em `desktop/segredos.cjs`, e seu novo teste. Ambos integram o segundo envio confirmado, **`35c290c`**. A contagem anterior de fontes inalteradas descreve somente a revisão anterior a essa exceção. O commit inicial `f6405c5` continua sendo a prova histórica do primeiro envio. O snapshot começa sem importar a ancestralidade anterior por curadoria de privacidade. O repositório original, seu histórico, arquivos e worktrees foram preservados.
 
@@ -50,7 +59,6 @@ A execução normal de `work/lume-soft-20261027/install-beta8.ps1` foi recusada 
 
 Continuam sem conclusão neste registro:
 
-- Conclusão da validação integrada além dos recortes focais registrados, preservando as falhas históricas.
 - Instalação beta.8 bloqueada pela política de execução do script; abertura/reinício e fonte real na GUI instalada não foram executados. O ensaio isolado e a saída zero do build não comprovam instalação.
 - Coleta positiva real de aplicativo ativo, abertura pela busca do Windows e fixação na barra por mecanismo permitido.
 - Qualidade semântica com mensagens autorizadas: a conta existente atingiu cota; o histórico permanece fechado até avaliação aprovada. Não houve novo pareamento, conta ou modelo para superar esse limite.

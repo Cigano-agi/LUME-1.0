@@ -79,3 +79,9 @@ O recibo privado `snapshot-review-final-delta.json` registra lista fechada de ar
 ## Confirmação posterior do segundo push
 
 O recibo privado `github-second-push.json` registra o envio de **`35c290cdaa6412d12faf9c8e21ef81d8d9fa4e3e`**, com 1.045 arquivos. A revisão consultou independentemente a API: `main` aponta para esse commit, o repositório permanece privado e Actions está desativado. Assim, as referências acima ao segundo envio pendente descrevem o corte anterior, já superado por essa prova. Este complemento factual é posterior ao envio confirmado e requer recibo próprio; não muda o estado parcial do produto, a instalação beta.8 bloqueada ou os gates pendentes.
+
+## Complemento QA03 — execução no checkout publicado
+
+No commit publicado `830111f609861301adf998455ca0a920d9557b80`, a coordenação executou os 111 arquivos anteriores mais o novo teste do cofre: **1.079/1.079 PASS, 112 arquivos, exit 0, zero falhas/cancelamentos/skips/todo**, em 1.507.182,4393 ms. O revisor conferiu independentemente os hashes do log/manifesto, os **1.045 arquivos rastreados**, os **112 testes**, o HEAD e a árvore limpa antes deste complemento; não repetiu a execução completa. O recibo privado `regression-03-review.json` identifica a prova e seus hashes.
+
+Não houve alteração de asserções ou timeouts individuais. O teto CLI de 180 segundos foi retirado; o agregado concluiu em 207.860,6422 ms e o timer respondeu em 3.273 ms, dentro dos 5.000 ms exigidos. A [revisão atual](lume-soft/REVISAO.md) registra o setup próprio e os limites. **Aprovado este recorte integrado**, preservando as falhas históricas das rodadas anteriores. Não equivale à suíte completa do repositório, instalação beta.8, avaliação semântica real, coleta positiva, macOS, hardware de 8 GB ou aceite. Produto permanece inalterado; estes complementos documentais são posteriores à execução.

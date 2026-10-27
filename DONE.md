@@ -1,6 +1,8 @@
 # Estado do Lume 1.0
 
-Versão comercial **1.0**, técnica **3.2.0-beta.8**. Snapshot do produto em validação, conforme o [contrato atual](docs/lume-soft/CONTRATO.md). Candidata `D0jpBX` e instalador preparados sobre `14dd9f1`, com ensaio nativo isolado aprovado. Recuperação aprovada independentemente. **Instalação bloqueada pela política de scripts do PowerShell antes do NSIS; instalada ainda beta.7.** A regressão integrada 02 terminou com 1.059 aprovações, três falhas e um cancelamento em 1.063 testes. O focal posterior de restauração/cofre passou em 10/10; a correção final do cofre teve revisão independente de 47/47. Primeiro e segundo pushes privados confirmados em `main`: `f6405c5` e `35c290c`, com Actions desligado. O segundo é o último envio comprovado neste registro. Detalhes e limites no [registro de verificação](docs/lume-soft/VERIFICACAO.md).
+**QA atual — rodada 03:** 1.079/1.079 testes aprovados em 112 arquivos, no checkout limpo `830111f`, em 27/10/2026. Zero falha, cancelamento, skip ou todo. Revisão independente aprovada nesse recorte, com conferência de log, comando e hashes. A aprovação tem o escopo do manifesto e não fecha o bloqueio da instalação Windows.
+
+Versão comercial **1.0**, técnica **3.2.0-beta.8**. Snapshot do produto em validação, conforme o [contrato atual](docs/lume-soft/CONTRATO.md). Candidata `D0jpBX` e instalador preparados sobre `14dd9f1`, com ensaio nativo isolado aprovado. Recuperação aprovada independentemente. **Instalação bloqueada pela política de scripts do PowerShell antes do NSIS; instalada ainda beta.7.** A regressão integrada 02 terminou com 1.059 aprovações, três falhas e um cancelamento em 1.063 testes. O focal posterior de restauração/cofre passou em 10/10; a correção final do cofre teve revisão independente de 47/47. Publicação privada confirmada em `main` até `830111f`, com Actions desligado. Este complemento de QA ainda depende de seu próprio recibo de envio. Detalhes e limites no [registro de verificação](docs/lume-soft/VERIFICACAO.md).
 
 - [x] Interface suave, temas, fontes locais, 13 expressões e duas surpresas finitas.
 - [x] Som opt-in, prévia/volume, deduplicação e movimento reduzido.
@@ -9,7 +11,7 @@ Versão comercial **1.0**, técnica **3.2.0-beta.8**. Snapshot do produto em val
 - [x] Registrar o resultado da regressão integrada 02, preservando as falhas e o cancelamento.
 - [x] Concluir o focal de restauração/cofre: 10/10, sem reclassificar a regressão ampla ou a fonte anterior.
 - [x] Corrigir a limpeza de temporários do cofre após registrar o critério: teste dirigido final 16/16 e revisão independente de cofre/ChatGPT 47/47.
-- [ ] Concluir a validação integrada além desses recortes focais.
+- [x] Concluir a rodada integrada 03 no escopo de 112 arquivos: 1.079/1.079 aprovados, sem falha, cancelamento, skip ou todo; checkout `830111f` e 1.045 arquivos rastreados inalterados. Revisão independente aprovada nesse recorte; não é aprovação de todo o repositório ou instalação.
 - [x] Empacotar a candidata beta.8 `D0jpBX`, com saída zero do build.
 - [x] Exercitar a candidata sem modificar o executável: duas inicializações e saídas normais, companhia sem eventos de foco observados, atividade desligada e três capturas privadas.
 - [x] Concluir backup operacional 02 e restauração de ensaio, com hashes iguais no escopo copiado.
