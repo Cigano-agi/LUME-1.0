@@ -1,10 +1,11 @@
 # Documentação do Lume
 
-O ponto de entrada do produto é o [README principal](../README.md). Este índice organiza os documentos por finalidade; estados históricos continuam identificados por data e não substituem a entrega atual.
+O ponto de entrada do produto é o [README principal](../README.md). Este índice organiza os documentos por finalidade; estados históricos continuam identificados por data e não substituem a entrega atual. O primeiro push privado em `main` (`f6405c5`) está verificado, com Actions desligado; o segundo está pendente. Candidata beta.8 e instalador estão preparados, com ensaio isolado aprovado e recuperação verificada independentemente. A instalação beta.8 está bloqueada pela política de scripts do PowerShell antes do NSIS; a instalada permanece beta.7. O [registro atual](lume-soft/VERIFICACAO.md) distingue preparação, execução, revisão e instalação.
 
 | Preciso encontrar… | Comece aqui |
 | --- | --- |
 | O que está sendo entregue e o que falta | [DONE](../DONE.md) |
+| Regressão, primeiro push e limites do corte atual | [Verificação atual](lume-soft/VERIFICACAO.md) |
 | Origem do snapshot e limites da curadoria | [Origem deste repositório](ORIGEM.md) |
 | A revisão atual do Lume 1.0 | [Experiência, presença e ritmo](lume-soft/README.md) |
 | O escopo vigente do Lume 1.0 | [Contrato atual](lume-soft/CONTRATO.md) e [organização das conversas](lume-1/CONTRATO.md) |

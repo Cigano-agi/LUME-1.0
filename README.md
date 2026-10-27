@@ -10,7 +10,9 @@ Lume reúne memória de conversas autorizadas, compromissos e projetos em um apl
 
 [Conheça o produto](#um-lugar-para-recuperar-o-contexto) · [Experiência e privacidade](docs/lume-soft/README.md) · [Desenvolvimento](#desenvolvimento) · [Documentação](docs/README.md) · [Estado da entrega](DONE.md)
 
-A versão está em validação. Este snapshot foi preparado para o repositório privado **LUME-1.0**, com um novo histórico Git por curadoria de privacidade. O repositório anterior, seus commits e worktrees permanecem intactos na [origem](docs/ORIGEM.md). A beta.8 ainda não foi instalada; a regressão integrada 02 está em execução e o push deste snapshot está pendente. Qualidade da organização com dados reais, aceite de utilidade, macOS nativo e hardware de 8 GB têm provas próprias; consulte os [critérios e pendências](DONE.md).
+**Prévia em validação.** A candidata Windows beta.8 passou pelo ensaio em perfil isolado e tem recuperação verificada. A atualização parou na política de scripts do PowerShell antes do instalador; a versão instalada permanece beta.7. Organização com dados reais, aceite de utilidade, macOS e hardware de 8 GB ainda têm validações pendentes. Consulte o [estado da entrega](DONE.md) e as [provas e limites](docs/lume-soft/VERIFICACAO.md).
+
+Este repositório é privado e começa com um snapshot curado. O [histórico anterior](docs/ORIGEM.md), seus commits e worktrees foram preservados; dados pessoais ficam fora deste conteúdo.
 
 ## Um lugar para recuperar o contexto
 

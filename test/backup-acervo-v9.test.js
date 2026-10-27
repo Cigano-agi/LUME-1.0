@@ -31,8 +31,11 @@ async function fixture() {
 
 test('catálogo I/X/G compilado, com PK e colunas explícitas', () => {
   // 03B2 adiciona histórico local como G: backup deve recusar linhas, sem omiti-las.
-  assert.equal(CATALOGO_V9.length, 87);
-  assert.deepEqual(CATALOGO_V9.reduce((a, t) => (a[t.decisao]++, a), { I: 0, X: 0, G: 0 }), { I: 53, X: 26, G: 8 });
+  // A atividade local de apps é explicitamente excluída do acervo (X).
+  assert.equal(CATALOGO_V9.length, 88);
+  assert.deepEqual(CATALOGO_V9.reduce((a, t) => (a[t.decisao]++, a), { I: 0, X: 0, G: 0 }), { I: 53, X: 27, G: 8 });
+  assert.equal(CATALOGO_V9.find(t => t.nome === 'atividade_apps_dias').decisao, 'X');
+  assert.equal(TABELAS_I_V9.some(t => t.nome === 'atividade_apps_dias'), false);
   assert.deepEqual(CATALOGO_V9.find(t => t.nome === 'eventos').colunas.slice(0, 4), ['id', 'conversa_id', 'origem_id', 'direcao']);
   assert.deepEqual(CATALOGO_V9.find(t => t.nome === 'f10_procedencias').pk, ['evento_id', 'fingerprint', 'pacote_id', 'projeto_id']);
   assert.equal(CATALOGO_V9.find(t => t.nome === 'lume_execucao_contexto_grants').decisao, 'X');

@@ -10,6 +10,27 @@ function criarCofre(diretorio, safeStorage) {
   const pessoal = Object.freeze({chatgpt:join(diretorio,'lume-chatgpt.seguro'),github:join(diretorio,'lume-github.seguro'),clickup:join(diretorio,'lume-clickup.seguro')});
   const assinatura = join(diretorio, 'compartilhamento.seguro');
   const disponivel = () => safeStorage.isEncryptionAvailable() && (process.platform !== 'linux' || safeStorage.getSelectedStorageBackend?.() !== 'basic_text');
+  const apagarArquivo = target => {
+    try { unlinkSync(target); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+  };
+  const gravarCifrado = (target, valor) => {
+    const cifra = safeStorage.encryptString(valor), temporario = target + '.tmp';
+    mkdirSync(diretorio, { recursive: true });
+    try {
+      writeFileSync(temporario, cifra, { mode: 0o600 });
+      renameSync(temporario, target);
+    } finally {
+      // Uma troca recusada nunca remove o destino anterior. A falha de limpeza
+      // também é propagada; nenhum resultado incerto recebe confirmação.
+      apagarArquivo(temporario);
+    }
+  };
+  const removerCifrado = target => {
+    // Limpar primeiro o resíduo impede anunciar remoção com uma cifra órfã.
+    apagarArquivo(target + '.tmp');
+    apagarArquivo(target);
+    return { ok: true };
+  };
   return {
     estado() { return { disponivel: disponivel(), configurada: existsSync(arquivo) }; },
     executar(operacao, valor) {
@@ -17,7 +38,7 @@ function criarCofre(diretorio, safeStorage) {
       if (nova) {
         const target=pessoal[nova[1]],action=nova[2];
         if(action==='estado')return {disponivel:disponivel(),configurada:existsSync(target)};
-        if(action==='remover'){if(existsSync(target))unlinkSync(target);return {ok:true};}
+        if(action==='remover')return removerCifrado(target);
         if(!disponivel())throw new Error('Proteção de credenciais do sistema indisponível.');
         if(action==='ler'){if(!existsSync(target))throw new Error('Conexão pessoal ainda não configurada.');return safeStorage.decryptString(readFileSync(target));}
         if(typeof valor!=='string'||!valor||valor.length>(nova[1]==='chatgpt'?1048576:2048))throw new Error('Credencial inválida.');
@@ -25,10 +46,10 @@ function criarCofre(diretorio, safeStorage) {
           let data;try{data=JSON.parse(valor);}catch{throw new Error('Registro ChatGPT inválido.');}
           if(data?.version!==1||!Array.isArray(data.accounts)||data.accounts.length>16)throw new Error('Registro ChatGPT inválido.');
         }else if(/[\r\n\s]/.test(valor))throw new Error('Credencial inválida.');
-        mkdirSync(diretorio,{recursive:true});writeFileSync(target+'.tmp',safeStorage.encryptString(valor),{mode:0o600});renameSync(target+'.tmp',target);return {ok:true};
+        gravarCifrado(target,valor);return {ok:true};
       }
       if (operacao === 'telegram-estado') return { disponivel: disponivel(), configurada: existsSync(telegram) };
-      if (operacao === 'telegram-remover') { if (existsSync(telegram)) unlinkSync(telegram); return { ok: true }; }
+      if (operacao === 'telegram-remover') return removerCifrado(telegram);
       if (['telegram-ler','telegram-gravar'].includes(operacao)) {
         if (!disponivel()) throw new Error('Proteção de credenciais do sistema indisponível.');
         if (operacao === 'telegram-ler') {
@@ -36,13 +57,11 @@ function criarCofre(diretorio, safeStorage) {
           return safeStorage.decryptString(readFileSync(telegram));
         }
         if (typeof valor !== 'string' || !/^\d{6,12}:[A-Za-z0-9_-]{30,100}$/.test(valor)) throw new Error('Token do Telegram inválido.');
-        mkdirSync(diretorio, { recursive: true });
-        writeFileSync(telegram + '.tmp', safeStorage.encryptString(valor), { mode: 0o600 });
-        renameSync(telegram + '.tmp', telegram);
+        gravarCifrado(telegram, valor);
         return { ok: true };
       }
       if (operacao === 'openrouter-estado') return { disponivel: disponivel(), configurada: existsSync(openrouter) };
-      if (operacao === 'openrouter-remover') { if (existsSync(openrouter)) unlinkSync(openrouter); return { ok: true }; }
+      if (operacao === 'openrouter-remover') return removerCifrado(openrouter);
       if (['openrouter-ler','openrouter-gravar'].includes(operacao)) {
         if (!disponivel()) throw new Error('Proteção de credenciais do sistema indisponível.');
         if (operacao === 'openrouter-ler') {
@@ -50,22 +69,18 @@ function criarCofre(diretorio, safeStorage) {
           return safeStorage.decryptString(readFileSync(openrouter));
         }
         if (typeof valor !== 'string' || !/^sk-or-v1-[a-f0-9]{64}$/.test(valor)) throw new Error('Formato de chave OpenRouter inválido.');
-        mkdirSync(diretorio, { recursive: true });
-        writeFileSync(openrouter + '.tmp', safeStorage.encryptString(valor), { mode: 0o600 });
-        renameSync(openrouter + '.tmp', openrouter);
+        gravarCifrado(openrouter, valor);
         return { ok: true };
       }
       if (operacao === 'estado') return this.estado();
-      if (operacao === 'remover') { if (existsSync(arquivo)) unlinkSync(arquivo); return { ok: true }; }
+      if (operacao === 'remover') return removerCifrado(arquivo);
       if (operacao === 'f10-estado' && !existsSync(assinatura)) return { disponivel: disponivel(), criada: false };
       if (!disponivel()) throw new Error('Proteção de credenciais do sistema indisponível.');
       if (['f10-estado','f10-criar','f10-assinar'].includes(operacao)) {
         if(!existsSync(assinatura)) {
           if(operacao!=='f10-criar') throw new Error('Crie sua identidade de compartilhamento primeiro.');
           const keys=generateKeyPairSync('ed25519');
-          mkdirSync(diretorio,{recursive:true});
-          writeFileSync(assinatura+'.tmp',safeStorage.encryptString(keys.privateKey.export({type:'pkcs8',format:'pem'})),{mode:0o600});
-          renameSync(assinatura+'.tmp',assinatura);
+          gravarCifrado(assinatura,keys.privateKey.export({type:'pkcs8',format:'pem'}));
         }
         const key=createPrivateKey(safeStorage.decryptString(readFileSync(assinatura))),publica=createPublicKey(key);
         const chave_publica=publica.export({type:'spki',format:'pem'});
@@ -82,9 +97,7 @@ function criarCofre(diretorio, safeStorage) {
       }
       if (operacao === 'gravar') {
         if (typeof valor !== 'string' || !/^[A-Za-z0-9_-]{20,200}$/.test(valor)) throw new Error('Formato de chave inválido.');
-        mkdirSync(diretorio, { recursive: true });
-        writeFileSync(arquivo + '.tmp', safeStorage.encryptString(valor), { mode: 0o600 });
-        renameSync(arquivo + '.tmp', arquivo);
+        gravarCifrado(arquivo, valor);
         return { ok: true };
       }
       throw new Error('Operação de credencial inválida.');
