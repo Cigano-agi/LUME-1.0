@@ -9,11 +9,13 @@ Correções implementadas e revisão independente aprovada para layout e áudio.
 - [x] Repetir a revisão independente: 68 capturas, zero violações geométricas, 14 telas inspecionadas visualmente e 39/39 testes focais. Zoom CSS de 200% e viewport 1.024 × 768; não equivalem a zoom nativo ou aceite humano.
 - [x] Provar áudio real sintetizado com cinco WAVs, volume proporcional e negativos de emissão; 24/24 testes focais independentes. Sem audição física, autoplay nativo ou notificação Windows comprovados.
 - [x] Finalizar inspeção estática da candidata beta.9 e instalador normal: 134 arquivos do payload conferidos. App/Setup NotSigned e não executados; instalação segue como prova separada.
-- [ ] Concluir revisão dos documentos, sincronização por lista explícita, commit/push e recibo remoto desta revisão.
+- [x] Concluir revisão dos documentos e sincronização por lista explícita. Corte `5e713cf` confirmado por Git/API em `main`: repositório privado, Actions desligado, 1.049 arquivos, sete blobs remotos conferidos. Origem preservada e enviada no corte `d923818`.
 
 Versão comercial **1.0**, técnica **3.2.0-beta.9**. A janela observada usa a cópia de recuperação beta.7; a instalação não foi substituída. O bloqueio anterior do script de instalação permanece, sem nova tentativa ou contorno. Na observação atual o WhatsApp aparecia conectado; isso atualiza o estado da conexão sem reescrever a falha histórica. Organização automática ainda pausada para avaliação de qualidade; coleta positiva real, busca do Windows, instalação, utilidade, macOS e 8 GB continuam pendentes.
 
 Verificar: `node test/lume-layout-spacing.e2e.mjs --run`; para a base deste repositório, acrescentar `--baseline --baseline-ref=0a772a2`. Áudio: `node test/lume-layout-audio.e2e.mjs --run`. Comandos focais completos no relatório. Nenhuma captura real ou perfil é distribuído pelo Git.
+
+A revisão independente do pacote repetiu os 134 hashes, gate estático, integridade do contêiner, versão/fontes e Authenticode. Comparou o payload já extraído, sem repetir a extração. Recibo privado `package-review.json`, SHA-256 `1b690e40ac02ee2a7d41724650ae99de8c90e226e8cd4ec1b811b3992d0899d2`. Galeria, cinco WAVs e candidata foram entregues em pasta privada de Downloads. O anúncio não foi enviado e a beta.9 não foi executada ou instalada. Este fechamento documental sucede o corte identificado; não encerra os gates anteriores de instalação e aceite.
 
 ## Histórico preservado — revisão beta.8
 
