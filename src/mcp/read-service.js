@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { LEITURA_SQL,LEITURA_PESSOAL_SQL,leituraFonteSql,fonteLocalIntegra } from '../leitura-sql.js';
 import { assinaturaFonte, HASH_FONTE_SQL } from '../tarefas-esquema.js';
+import {prepararValidadeOrganizacao} from '../pessoal/organizacao-validade.js';
 
 const TRECHO_MAX = 1200;
 const texto = value => String(value || '').replace(/\b[\w.-]+@(g\.us|s\.whatsapp\.net|lid|c\.us)\b/gi, '[identificador protegido]').slice(0, TRECHO_MAX);
@@ -87,10 +88,11 @@ function resultadoPendencia(row) {
 }
 // The MCP grant and LEITURA_SQL remain mandatory. Personal local reading alone
 // never widens the external scope; it only recognizes existing durable actions.
-function acaoAtualSql(db) {
+function acaoAtualSql(db,scope) {
   const exclusao=existe(db,'pessoal_politicas')?` AND NOT EXISTS(SELECT 1 FROM pessoal_politicas pp WHERE pp.conversa_id=e.conversa_id AND (NOT json_valid(pp.atendimento) OR json_extract(pp.atendimento,'$.excluida')=1))`:'';
   const ignorada=existe(db,'autorizacoes')?` AND NOT EXISTS(SELECT 1 FROM autorizacoes au WHERE au.conversa_id=e.conversa_id AND au.modo='ignorar')`:'';
-  return `((EXISTS(SELECT 1 FROM lume_acoes_conversas p WHERE p.conversa_id=e.conversa_id) OR
+  const scopeLiteral=JSON.stringify(scope??{kind:'invalid'}).replaceAll("'","''");
+  return `(lume_organizacao_externa('acao',a.id,'${scopeLiteral}')=1 AND (EXISTS(SELECT 1 FROM lume_acoes_conversas p WHERE p.conversa_id=e.conversa_id) OR
     (e.permissao<>'compartilhado' AND ${LEITURA_PESSOAL_SQL} AND NOT EXISTS(SELECT 1 FROM f10_procedencias fp WHERE fp.evento_id=e.id)))${exclusao}${ignorada})`;
 }
 
@@ -118,7 +120,7 @@ function resultadoNegocio(row) {
 }
 
 export class LumeMcpReadService {
-  constructor(db) { this.db = db; }
+  constructor(db) { this.db = db; prepararValidadeOrganizacao(db); }
 
   fontes({ scope, start, end, date, question = '', projectNames = [], conversationNames = [], cursor, limit }) {
     const where = [leituraFonteSql(this.db), "e.texto IS NOT NULL AND trim(e.texto)<>''"], args = [];
@@ -166,7 +168,7 @@ export class LumeMcpReadService {
     }
     if (row._kind === 'action') {
       if (typeof row._ref !== 'string' || !existe(this.db, 'lume_acoes')) return false;
-      where.push('a.id=?', `a.fonte_assinatura=${HASH_FONTE_SQL}`,acaoAtualSql(this.db)); args.push(row._ref);
+      where.push('a.id=?', `a.fonte_assinatura=${HASH_FONTE_SQL}`,acaoAtualSql(this.db,scope)); args.push(row._ref);
       const atual = this.db.prepare(`SELECT e.*,COALESCE(g.nome,c.nome) conversa_nome,a.id derivado_id,a.resumo item_resumo,a.tipo item_tipo,a.estado item_estado,a.trecho acao_trecho,a.responsavel_id acao_responsavel,a.lembrar_em acao_lembrar
         FROM lume_acoes a JOIN desktop_fontes e ON e.id=a.evento_id
         LEFT JOIN grupos_app g ON g.id=e.conversa_id LEFT JOIN conversas_app c ON c.id=e.conversa_id WHERE ${where.join(' AND ')}`).get(...args);
@@ -195,7 +197,7 @@ export class LumeMcpReadService {
         partes.push(`SELECT e.*,COALESCE(g.nome,c.nome) conversa_nome,i.id derivado_id,i.resumo item_resumo,i.tipo item_tipo,i.estado item_estado,NULL acao_trecho,NULL acao_responsavel,NULL acao_lembrar,'crm' tipo_derivado,printf('c:%020d',i.id) cursor_ref
           FROM itens_crm i JOIN desktop_fontes e ON e.conversa_id=i.conversa_id AND e.origem_id=i.origem_id ${joins} WHERE ${where.join(' AND ')}`);
       } else {
-        where.push(`a.fonte_assinatura=${HASH_FONTE_SQL}`,acaoAtualSql(this.db), state === 'resolvido' ? "a.estado='resolvido'" : "a.estado IN ('sugerido','confirmado','estacionado')");
+        where.push(`a.fonte_assinatura=${HASH_FONTE_SQL}`,acaoAtualSql(this.db,scope), state === 'resolvido' ? "a.estado='resolvido'" : "a.estado IN ('sugerido','confirmado','estacionado')");
         partes.push(`SELECT e.*,COALESCE(g.nome,c.nome) conversa_nome,a.id derivado_id,a.resumo item_resumo,a.tipo item_tipo,a.estado item_estado,a.trecho acao_trecho,a.responsavel_id acao_responsavel,a.lembrar_em acao_lembrar,'action' tipo_derivado,'a:'||a.id cursor_ref
           FROM lume_acoes a JOIN desktop_fontes e ON e.id=a.evento_id ${joins} WHERE ${where.join(' AND ')}`);
       }

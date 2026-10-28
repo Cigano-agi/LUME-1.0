@@ -61,7 +61,7 @@ test('Lume1 review: no quality attestation, wrong model and unavailable account 
   assert.throws(()=>f.org.aprovarAvaliacao({...attestation(),errosCriticos:1}));
   f.org.aprovarAvaliacao(attestation());f.state.model='different';await f.org.passo();assert.equal(f.calls.length,0);
   f.state.model='synthetic-review';f.state.connected=false;await f.org.passo();assert.equal(f.calls.length,0);
-  f.state.connected=true;await f.org.passo();assert.equal(f.calls.length,1);f.noEffects();
+  f.state.connected=true;await f.org.passo();assert.equal(f.calls.length,2);f.noEffects();
 });
 
 for(const mutation of ['permission','remote','exclude','edit','author','delete'])test(`Lume1 review: ${mutation} during inference discards late derivation`,async t=>{
@@ -79,12 +79,12 @@ for(const mutation of ['permission','remote','exclude','edit','author','delete']
   assert.equal(f.org.sugestoes(id),null);assert.equal(f.count('lume_acoes'),0);assert.equal(f.count('lume_projetos_comerciais'),0);f.noEffects();
 });
 
-test('Lume1 review: duplicate ingest and concurrent instances dispatch once and preserve durable source',async t=>{
+test('Lume1 review: duplicate ingest and concurrent instances dispatch one two-pass cycle and preserve durable source',async t=>{
   const f=fixture(t),id=f.add({origin:'same'});assert.equal(f.add({origin:'same'}),id);
   const entered=deferred(),release=deferred();f.handler(async()=>{entered.resolve();await release.promise;return answer();});
   const one=f.org.passo();await entered.promise;const two=f.org.passo(),other=f.newInstance();
   await other.passo();assert.equal(f.calls.length,1);release.resolve();await Promise.all([one,two]);
-  await f.org.passo();assert.equal(f.calls.length,1);assert.equal(f.count('eventos'),1);assert.equal(f.stage(id).estado,'concluida');f.noEffects();
+  await f.org.passo();assert.equal(f.calls.length,2);assert.equal(f.count('eventos'),1);assert.equal(f.stage(id).estado,'concluida');f.noEffects();
 });
 
 test('Lume1 review: manual tags win over late result and survive actual SQLite reopen',async t=>{
@@ -92,7 +92,7 @@ test('Lume1 review: manual tags win over late result and survive actual SQLite r
   f.handler(async()=>{entered.resolve();await release.promise;return answer();});
   const pending=f.org.passo();await entered.promise;f.org.corrigirTags({conversaId:DM,tags:['parceiro']});release.resolve();await pending;
   assert.equal(f.stage(id).estado,'concluida');assert.deepEqual(f.org.tags(DM).map(x=>[x.valor,x.origem]),[['parceiro','manual']]);
-  const cursor=f.org.estado().cursor;f.restart();assert.deepEqual(f.org.estado().cursor,cursor);await f.org.passo();assert.equal(f.calls.length,1);
+  const cursor=f.org.estado().cursor;f.restart();assert.deepEqual(f.org.estado().cursor,cursor);await f.org.passo();assert.equal(f.calls.length,2);
   assert.deepEqual(f.org.tags(DM).map(x=>[x.valor,x.origem]),[['parceiro','manual']]);
   f.org.corrigirTags({conversaId:DM,tags:[]});assert.deepEqual(f.org.tags(DM),[]);f.noEffects();
 });
@@ -101,13 +101,13 @@ test('Lume1 review: account failure retries durably after backoff, without chang
   const f=fixture(t),id=f.add();let fail=true;f.handler(async()=>{if(fail)throw Object.assign(new Error('Synthetic account failure'),{code:'subscription_sharing_usage_limit_exceeded'});return answer();});
   await f.org.passo();assert.equal(f.stage(id).estado,'falha');assert.equal(f.org.sugestoes(id),null);
   await f.org.passo();assert.equal(f.calls.length,1);fail=false;f.advance(31000);await f.org.passo();
-  assert.equal(f.stage(id).estado,'concluida');assert.equal(f.calls.length,2);f.noEffects();
+  assert.equal(f.stage(id).estado,'concluida');assert.equal(f.calls.length,3);f.noEffects();
 });
 
 test('Lume1 review: group local reading does not authorize third party remote, and author filter is exact',async t=>{
   const f=fixture(t),allowed=f.add({id:GROUP,author:DM}),privateId=f.add({id:GROUP,author:OTHER,permission:'terceiro',text:'Conteúdo somente local da outra pessoa.'});
   f.handler(async()=>answer({tags:[{valor:'equipe',trecho:TEXT,confianca:.95},{valor:'projeto',trecho:TEXT,confianca:.95}]}));
-  await f.org.passo();assert.deepEqual(f.calls.map(c=>c.eventoId),[allowed]);assert.equal(f.org.sugestoes(privateId),null);
+  await f.org.passo();assert.deepEqual(f.calls.map(c=>c.eventoId),[allowed,allowed]);assert.equal(f.org.sugestoes(privateId),null);
   assert.deepEqual(f.org.tags(GROUP).map(t=>t.valor),['projeto']);
   const timeline=f.org.timeline({conversa:GROUP,pessoa:DM});assert.deepEqual(timeline.itens.map(x=>x.fonte.eventoId),[allowed]);assert.equal(timeline.itens[0].autorId,DM);
   assert.equal(f.org.pessoas().pessoas.find(p=>p.id===GROUP).tipo,'grupo');assert.equal(f.org.politica.podeEnviar(GROUP).permitido,false);f.noEffects();
@@ -132,7 +132,8 @@ test('Lume1 review: invalid literal and repeated literal never create derived re
 test('Lume1 review: recent messages precede historical messages and pagination has no overlap',async t=>{
   const f=fixture(t);f.handler(async()=>empty());
   const old=f.add({date:new Date('2025-01-01T00:00:00Z')}),recent=f.add(),recent2=f.add();
-  await f.org.passo();assert.equal(f.calls[0].eventoId,recent2);await f.org.passo();assert.equal(f.calls[1].eventoId,recent);await f.org.passo();assert.equal(f.calls[2].eventoId,old);
+  await f.org.passo();assert.equal(f.calls[0].eventoId,recent);await f.org.passo();assert.equal(f.calls[2].eventoId,recent2);await f.org.passo();assert.equal(f.calls[4].eventoId,old);
+  assert.deepEqual(f.calls.map(c=>c.eventoId),[recent,recent,recent2,recent2,old,old]);
   const first=f.org.timeline({conversa:DM,limite:2}),next=f.org.timeline({conversa:DM,limite:2,pagina:first.proximaPagina});
   assert.equal(first.proximaPagina,2);assert.deepEqual([...first.itens,...next.itens].map(x=>x.fonte.eventoId),[recent2,recent,old]);assert.equal(next.proximaPagina,null);assert.equal(f.org.estado().historicoCompleto,false);f.noEffects();
 });
@@ -143,7 +144,7 @@ test('Lume1 review: permanent invalid source result is not dispatched repeatedly
   for(let i=0;i<3;i++)await f.org.passo();
   assert.equal(f.calls.length,1,'a permanent refusal must not become a fresh paid/quota request on every scan');
   f.db.prepare('UPDATE eventos SET texto=? WHERE id=?').run(TEXT+' Fonte revisada.',id);
-  f.handler(async()=>empty());await f.org.passo();assert.equal(f.calls.length,2);assert.equal(f.stage(id).estado,'concluida');
+  f.handler(async()=>empty());await f.org.passo();assert.equal(f.calls.length,3);assert.equal(f.stage(id).estado,'concluida');
 });
 
 test('Lume1 review: completed receipt must match the evaluated model before recording suggestions',async t=>{

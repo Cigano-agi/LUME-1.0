@@ -1,11 +1,12 @@
 import {createHash,randomUUID} from 'node:crypto';
-import {LEITURA_SQL} from '../leitura-sql.js';
+import {LEITURA_SQL,LEITURA_PESSOAL_SQL} from '../leitura-sql.js';
 import {assinaturaFonte} from '../tarefas-esquema.js';
 import {avisosFonte} from '../fontes-desktop.js';
 import {criarResolvedorContatoPorIdentificador} from '../contatos-desktop.js';
 import {prepararProjetosComerciais} from './esquema.js';
 import {previaDeAcoes,criarRascunhoDeAcoes} from './acoes.js';
 import {listarImportados,prepararImportado,revalidarImportado} from './importacao.js';
+import {derivacaoOrganizacaoAtual,comLeituraOrganizacao} from '../pessoal/organizacao-validade.js';
 export {prepararProjetosComerciais,PROJETOS_COMERCIAIS_TABELAS,PROJETOS_COMERCIAIS_BACKUP} from './esquema.js';
 
 const hash=v=>createHash('sha256').update(JSON.stringify(v)).digest('hex');
@@ -18,7 +19,7 @@ const conversaDireta=id=>typeof id==='string'&&/^[^@\s]+@(lid|s\.whatsapp\.net|c
 
 /** Serviço local: o chamador autentica sessão/termos/gesto. Não fornece grants nem envia mensagens. */
 export class ProjetosComerciais {
-  constructor(db,{agora=()=>new Date()}={}){this.db=db;this.agora=agora;this.previasAcoes=new Map();this.previasImportados=new Map();prepararProjetosComerciais(db);}
+  constructor(db,{agora=()=>new Date(),leituraLocal=false}={}){this.db=db;this.agora=agora;this.leituraLocal=leituraLocal===true;this.previasAcoes=new Map();this.previasImportados=new Map();prepararProjetosComerciais(db);}
   _quando(){return this.agora().toISOString();}
   _transacao(fn){
     const nome='pc_'+randomUUID().replaceAll('-','');this.db.exec('SAVEPOINT '+nome);
@@ -26,7 +27,7 @@ export class ProjetosComerciais {
     catch(e){this.db.exec('ROLLBACK TO '+nome);this.db.exec('RELEASE '+nome);throw e;}
   }
   _evento(id){
-    return this.db.prepare(`SELECT e.* FROM desktop_fontes e WHERE e.id=? AND ${LEITURA_SQL}`).get(id);
+    return this.db.prepare(`SELECT e.* FROM desktop_fontes e WHERE e.id=? AND ${this.leituraLocal?LEITURA_PESSOAL_SQL:LEITURA_SQL}`).get(id);
   }
   _selecao({eventoId,trecho,inicio}={}){
     if(!Number.isSafeInteger(eventoId)||eventoId<1)throw erro('Evento inválido.');
@@ -54,6 +55,7 @@ export class ProjetosComerciais {
   }
   _lerFonte(f){
     if(f.removida||f.invalidada)return null;
+    if(!derivacaoOrganizacaoAtual(this.db,'vinculo',f.id,{externo:!this.leituraLocal}))return null;
     const e=this._evento(f.evento_id);
     if(!e||assinaturaFonte(e)!==f.assinatura||typeof e.texto!=='string'||e.texto.length<f.inicio+f.tamanho)return null;
     const conteudo=e.texto.slice(f.inicio,f.inicio+f.tamanho);
@@ -65,6 +67,7 @@ export class ProjetosComerciais {
   _carregar(id){
     if(!texto(id,200))return null;
     const p=this.db.prepare('SELECT * FROM lume_projetos_comerciais WHERE id=?').get(id);if(!p)return null;
+    if(!derivacaoOrganizacaoAtual(this.db,'projeto',id,{externo:!this.leituraLocal}))return null;
     const links=this.db.prepare('SELECT * FROM lume_projetos_fontes WHERE projeto_id=? ORDER BY criada_em,id').all(id);
     const fontes=links.map(f=>this._lerFonte(f)).filter(Boolean);
     // O nome também é derivado das fontes de criação. Não vaza quando qualquer base perde autoridade.
@@ -103,8 +106,11 @@ export class ProjetosComerciais {
   listarImportados(pedido){return listarImportados(this,pedido);}
   prepararImportado(pedido){return prepararImportado(this,pedido);}
   revalidarImportado(pedido){return revalidarImportado(this,pedido);}
-  obter(id){const r=this._carregar(id);return r?this._publico(r):null;}
+  obter(id){return comLeituraOrganizacao(this.db,()=>{const r=this._carregar(id);return r?this._publico(r):null;});}
   listar({estado,limite=100,offset=0,q=''}={}){
+    return comLeituraOrganizacao(this.db,()=>this._listar({estado,limite,offset,q}));
+  }
+  _listar({estado,limite,offset,q}){
     if(estado!==undefined&&!estados.includes(estado)||!limiteValido(limite,200)||!Number.isSafeInteger(offset)||offset<0||offset>100000||typeof q!=='string'||q.length>160)throw erro('Filtro ou limite inválido.');
     const rows=this.db.prepare(`SELECT id FROM lume_projetos_comerciais WHERE (?='' OR estado=?) AND (?='' OR nome LIKE ? ESCAPE '\\') ORDER BY atualizado_em DESC,id`);
     const like='%'+q.replace(/[\\%_]/g,'\\$&')+'%';

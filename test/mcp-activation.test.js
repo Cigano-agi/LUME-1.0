@@ -127,6 +127,8 @@ test('empacotador produz MCPB autocontido sem dados ou credenciais', t => {
     'src/mcp/schemas.js', 'src/mcp/stdio-entry.js', 'src/mcp/stdio-server.js',
     'src/mcp/tokens.js', 'src/fontes-desktop.js', 'src/leitura-sql.js',
     'src/qualidade-transcricao.js', 'src/relogio.js', 'src/tarefas-esquema.js',
+    'src/pessoal/organizacao-validade.js', 'src/pessoal/organizacao-identidade.js',
+    'src/pessoal/organizacao-atribuicao.js',
     ...(process.platform === 'darwin' ? [] : ['native/win-acl/bin/lume-acl.exe', 'native/win-acl/bin/manifest.json'])
   ], 'allowlist fechada do MCPB');
   assert.ok(!result.entries.some(name => /src\/perfil-manutencao\.js$|src\/notetaker\/(?:exclusao-[^/]+|direitos-selecao|servico|importacao|contrato|esquema)\.js$|audio-local-runtime\.js$/.test(name)));

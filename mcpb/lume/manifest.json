@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "com.readyworks.lume.local-memory",
   "display_name": "Lume — memória local",
-  "version": "3.2.0-beta.9",
+  "version": "3.2.0-beta.10",
   "description": "Consulta suas conversas permitidas no Lume com fontes verificáveis.",
   "long_description": "O Lume oferece ao Claude cinco ferramentas somente leitura para resumir o dia, buscar contexto, conferir uma fonte, listar pendências e acompanhar negócios. O histórico permanece no computador; apenas os trechos pedidos pelo Claude são enviados ao provedor.",
   "author": {

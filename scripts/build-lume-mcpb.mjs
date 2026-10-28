@@ -37,7 +37,10 @@ const FILES = Object.freeze([
   ['src/leitura-sql.js', 'src/leitura-sql.js'],
   ['src/qualidade-transcricao.js', 'src/qualidade-transcricao.js'],
   ['src/relogio.js', 'src/relogio.js'],
-  ['src/tarefas-esquema.js', 'src/tarefas-esquema.js']
+  ['src/tarefas-esquema.js', 'src/tarefas-esquema.js'],
+  ['src/pessoal/organizacao-validade.js', 'src/pessoal/organizacao-validade.js'],
+  ['src/pessoal/organizacao-identidade.js', 'src/pessoal/organizacao-identidade.js'],
+  ['src/pessoal/organizacao-atribuicao.js', 'src/pessoal/organizacao-atribuicao.js']
 ]);
 const NATIVE = Object.freeze([
   ['lume-acl.exe', 'native/win-acl/bin/lume-acl.exe'],

@@ -93,14 +93,25 @@ export class ChatGPTPessoal {
   }
   async #request(url, {timeoutMs=30000,...options} = {}) {
     const controller = new AbortController(); this.controllers.add(controller);
-    const cleanup=()=>this.controllers.delete(controller);
+    const signal=AbortSignal.any([controller.signal,AbortSignal.timeout(timeoutMs),...(options.signal?[options.signal]:[])]);
+    let abort;
+    const cleanup=()=>{this.controllers.delete(controller);if(abort)signal.removeEventListener('abort',abort);};
     try {
-      const response=await this.fetch(url,{...options,redirect:'error',signal:AbortSignal.any([controller.signal,AbortSignal.timeout(timeoutMs),...(options.signal?[options.signal]:[])])});
+      const response=await this.fetch(url,{...options,redirect:'error',signal});
       if(!response.body){cleanup();return response;}
       const reader=response.body.getReader();
+      let finished=false;
+      const cancelUpstream=reason=>{try{void reader.cancel(reason).catch(()=>{});}catch{}};
       const body=new ReadableStream({
-        async pull(target){try{const {done,value}=await reader.read();if(done){cleanup();target.close();}else target.enqueue(value);}catch(error){cleanup();target.error(error);}},
-        async cancel(reason){cleanup();await reader.cancel(reason);}
+        start(target){
+          abort=()=>{if(finished)return;finished=true;cleanup();target.error(signal.reason);cancelUpstream(signal.reason);};
+          signal.addEventListener('abort',abort,{once:true});if(signal.aborted)abort();
+        },
+        async pull(target){
+          try{const {done,value}=await reader.read();if(finished)return;if(done){finished=true;cleanup();target.close();}else target.enqueue(value);}
+          catch(error){if(!finished){finished=true;cleanup();target.error(error);}}
+        },
+        cancel(reason){if(finished)return;finished=true;cleanup();cancelUpstream(reason);}
       });
       return new Response(body,{status:response.status,statusText:response.statusText,headers:response.headers});
     } catch {cleanup();throw new ErroChatGPT('rede_indisponivel');}

@@ -1,6 +1,6 @@
 {
   "name": "assessor-2.0",
-  "version": "3.2.0-beta.9",
+  "version": "3.2.0-beta.10",
   "private": true,
   "main": "desktop/main.cjs",
   "author": "ReadyWorks",
@@ -72,7 +72,7 @@
     "appId": "com.readyworks.assessor",
     "productName": "Lume",
     "extraMetadata": {
-      "version": "3.2.0-beta.9"
+      "version": "3.2.0-beta.10"
     },
     "publish": [
       {
@@ -149,7 +149,8 @@
       "!src/painel/lume-site.js",
       "!src/execucao/codex-runner.js",
       "!src/execucao/jobs.js",
-      "src/painel/lume-soft-mascote.css"
+      "src/painel/lume-soft-mascote.css",
+      "src/painel/lume-auto.css"
     ],
     "asar": true,
     "asarUnpack": [

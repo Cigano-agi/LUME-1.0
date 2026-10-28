@@ -62,7 +62,7 @@ test('onboarding review: processing authorized account is factual; external-assi
 
 test('onboarding review: endpoint error exposes retry and recovers without claiming readiness early',async t=>{
   const f=await fixture(t,{error:true});await f.shot('erro-recuperavel');assert.equal(await f.page.locator('#first-readiness').getAttribute('data-ready'),'false');assert.match(await f.page.locator('#first-organization-state').innerText(),/memória salva continua disponível/i);
-  const before=f.calls();f.recover();await f.page.getByRole('button',{name:'Tentar novamente',exact:true}).click();await f.page.waitForFunction(()=>document.querySelector('#first-readiness').dataset.ready==='true');assert.equal(f.calls(),before+1);await f.shot('recuperado');
+  const before=f.calls();f.recover();const retry=f.page.locator('#first-organization');assert.equal(await retry.innerText(),'Tentar novamente');await retry.click();await f.page.waitForFunction(()=>document.querySelector('#first-readiness').dataset.ready==='true');assert.equal(f.calls(),before+1);await f.shot('recuperado');
 });
 
 test('onboarding review: operational privacy summary is current and versioned terms are unchanged',async()=>{

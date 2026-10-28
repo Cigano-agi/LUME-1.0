@@ -240,10 +240,11 @@ function avaliacaoComercialIncerta(avaliacao){
     const r=++listRevision,d=revisaoDadosVisiveis;target.replaceChildren(element('p','Reunindo seus projetos…','muted'));
     try{
       const [{projetos},{projetos:importados}]=await Promise.all([api(endpoint),api(endpoint+'/importados')]);if(r!==listRevision||d!==revisaoDadosVisiveis)return;
-      const intro=element('div',null,'projects-intro');intro.append(element('h2','Cada projeto, com seu contexto.'),element('p','Abra uma mensagem e escolha “Adicionar a projeto”. Você vincula só as fontes que fazem parte daquele trabalho.','muted'),action('Encontrar uma mensagem',async()=>{window.lumeSetMemoryMode('search');await show('memory');$('search').focus({preventScroll:true});},'secondary'));
+      const intro=element('div',null,'projects-intro');intro.append(element('h2','Cada projeto, com seu contexto.'),element('p','Os projetos encontrados nas conversas autorizadas aparecem com suas fontes. Uma conversa pode tratar de projetos diferentes.','muted'));
+      const advanced=element('details',null,'la-project-advanced');advanced.append(element('summary','Organizar uma fonte manualmente'),element('p','Para acrescentar ou corrigir um vínculo, encontre a mensagem e escolha “Adicionar a projeto”.','muted'),action('Encontrar uma mensagem',async()=>{window.lumeSetMemoryMode('search');await show('memory');$('search').focus({preventScroll:true});},'secondary'));intro.append(advanced);
       target.replaceChildren(intro);
       const list=element('div',null,'projects-list');target.append(list);
-      if(!projetos.length&&!importados.length)empty(list,'Nenhum projeto disponível aqui.','Encontre uma mensagem e use “Adicionar a projeto”. Projetos do backup só aparecem quando suas fontes podem ser conferidas; restaurações antigas podem não ter essa informação.');
+      if(!projetos.length&&!importados.length)empty(list,'Nenhum projeto disponível neste recorte.','Confira a organização das conversas em Projetos. Projetos do backup só aparecem quando suas fontes podem ser conferidas.');
       for(const project of projetos){const card=element('article',null,'project-card');card.append(element('span',states[project.estado]||project.estado,'project-state'),element('h3',project.nome),element('p',`${project.fontes.length} ${project.fontes.length===1?'fonte vinculada':'fontes vinculadas'} · ${natures[project.natureza]||'A conferir'}`,'muted'),element('small','Atualizado em '+date(project.atualizadoEm)),action('Abrir projeto',()=>open(project.id),'secondary'));list.append(card);}
       if(importados.length){
         const section=element('section',null,'projects-imported'),cards=element('div',null,'projects-list');section.setAttribute('aria-labelledby','projects-imported-title');
@@ -258,7 +259,7 @@ function avaliacaoComercialIncerta(avaliacao){
   async function render(id,r){
     const [{projeto},history]=await Promise.all([api(endpoint+'/item?'+new URLSearchParams({id})),api(endpoint+'/timeline?'+new URLSearchParams({id,limite:'20'}))]);if(!valid(r))return;
     if(!projeto)throw Error('Projeto indisponível. Confira suas fontes e permissões.');
-    const body=frame(projeto.nome);body.append(element('p',states[projeto.estado]||projeto.estado,'resolver-state'),element('p','Contexto organizado por você. O acordo comercial ainda precisa ser conferido nas conversas.','resolver-intro'));
+    const body=frame(projeto.nome);body.append(element('p',states[projeto.estado]||projeto.estado,'resolver-state'),element('p','Contexto reunido a partir das fontes deste projeto. O acordo comercial ainda precisa ser conferido nas conversas.','resolver-intro'));
     const buttons=element('div',null,'button-row project-actions');
     const update=(path,label)=>buttons.append(action(label,async()=>{try{await api(endpoint+'/'+path,{id,confirmar:true});if(valid(r)){await render(id,r);void window.carregarProjetos06();}}catch(e){error(e,r);}},'secondary'));
     if(projeto.estado==='rascunho')update('confirmar','Confirmar organização');

@@ -1,5 +1,6 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {LEITURA_SQL,LEITURA_PESSOAL_SQL,leituraFonteSql} from './leitura-sql.js';
+import {prepararValidadeOrganizacao,derivacaoOrganizacaoAtual,comLeituraOrganizacao} from './pessoal/organizacao-validade.js';
 import {assinaturaFonte,HASH_FONTE_SQL} from './tarefas-esquema.js';
 import {prepararFontes} from './fontes-desktop.js';
 import {fonteAcionavelReuniao,retornoFonteReuniao,chaveAcaoReuniao} from './notetaker/vinculos.js';
@@ -106,6 +107,7 @@ export function conferirCandidatasAcoes(candidatas,fonte){
 // Lista e contagens compartilham a mesma fronteira; conversa é identidade exata,
 // aplicada no banco antes de qualquer limite. Não há interpretação de mensagens novas.
 function consultaAcoesLume(db,{estado='sugerido',conversa,agora=new Date(),local=false}={}){
+  prepararValidadeOrganizacao(db);
   if(!['ativos','minhas','sugerido','confirmado','estacionado','resolvido','descartado'].includes(estado)||
     conversa!==undefined&&!texto(conversa,1,200))throw new Error('Filtro de ações inválido.');
   const minhas=estado==='minhas',ativos=estado==='ativos'||minhas;
@@ -114,7 +116,7 @@ function consultaAcoesLume(db,{estado='sugerido',conversa,agora=new Date(),local
   const sql=`FROM lume_acoes a JOIN desktop_fontes e ON e.id=a.evento_id
     ${local?'LEFT JOIN conversas_app c ON c.id=e.conversa_id':
       'LEFT JOIN lume_acoes_conversas p ON p.conversa_id=e.conversa_id JOIN conversas_app c ON c.id=e.conversa_id'}
-    WHERE ${ativos?"(a.estado IN ('sugerido','confirmado') OR (a.estado='estacionado' AND a.lembrar_em<=?))":"a.estado=?"}
+    WHERE lume_organizacao_atual('acao',a.id)=1 AND ${ativos?"(a.estado IN ('sugerido','confirmado') OR (a.estado='estacionado' AND a.lembrar_em<=?))":"a.estado=?"}
     ${minhas?"AND a.responsavel_id='local:owner'":''}
     AND ${local?"e.tipo='notetaker_trecho'":"e.tipo<>'notetaker_trecho'"}
     AND a.fonte_assinatura=${HASH_FONTE_SQL} AND ${local?leituraFonteSql(db):`(
@@ -132,6 +134,7 @@ function fonteAcaoPermitidaSql(db){return `(
       (SELECT 1 FROM f10_procedencias fp WHERE fp.evento_id=e.id)))))`;}
 
 function comFonteLocal(db,row){
+  if(!derivacaoOrganizacaoAtual(db,'acao',row.id))return null;
   if(row.fonte_tipo!=='notetaker_trecho'){
     const {fonte_tipo,...original}=row;
     return original;
@@ -179,7 +182,8 @@ function projetarExecucoesDaLista(db,acoes,execucoes){
   return acoes.map(a=>({...a,execucao_ui:{estado:present.has(a.id)?'indisponivel':'nenhuma'}}));
 }
 
-export function contarAcoesLumePorConversa(db,{conversa,agora=new Date()}={}){
+export function contarAcoesLumePorConversa(db,opcoes){return comLeituraOrganizacao(db,()=>contarPorConversa(db,opcoes));}
+function contarPorConversa(db,{conversa,agora=new Date()}={}){
   const {sql,parametros}=consultaAcoesLume(db,{estado:'ativos',conversa,agora});
   if(!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='lume_acoes'").get())return [];
   const contagens=new Map(db.prepare(`SELECT e.conversa_id,COUNT(*) total ${sql} GROUP BY e.conversa_id`).all(...parametros)
@@ -190,7 +194,8 @@ export function contarAcoesLumePorConversa(db,{conversa,agora=new Date()}={}){
   return [...contagens].map(([conversa_id,total])=>({conversa_id,total}));
 }
 
-export function resumoAcoesLume(db,{agora=new Date()}={}){
+export function resumoAcoesLume(db,opcoes){return comLeituraOrganizacao(db,()=>resumo(db,opcoes));}
+function resumo(db,{agora=new Date()}={}){
   if(!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='lume_acoes'").get())return {total:0,itens:[]};
   const {sql,parametros}=consultaAcoesLume(db,{estado:'ativos',agora});
   const totalWa=db.prepare(`SELECT COUNT(*) total ${sql}`).get(...parametros).total;
@@ -210,6 +215,9 @@ export class AcoesLume {
   constructor(db,{agora=()=>new Date()}={}){this.db=db;this.agora=agora;this.execucoes=null;prepararAcoesLume(db);}
   definirExecucoes(execucoes){if(!execucoes||typeof execucoes.resumoParaAcoes!=='function')throw new TypeError('Serviço de execução inválido.');this.execucoes=execucoes;}
   obter(id){
+    return comLeituraOrganizacao(this.db,()=>this._obter(id));
+  }
+  _obter(id){
     if(typeof id!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))throw new Error('Identificador de ação inválido.');
     const row=this.db.prepare(`SELECT a.*,e.tipo fonte_tipo,e.conversa_id,c.nome conversa_nome,e.origem_id,e.recebido_em FROM lume_acoes a
       JOIN desktop_fontes e ON e.id=a.evento_id LEFT JOIN lume_acoes_conversas p ON p.conversa_id=e.conversa_id LEFT JOIN conversas_app c ON c.id=e.conversa_id
@@ -270,6 +278,9 @@ export class AcoesLume {
     }catch(error){this.db.exec('ROLLBACK TO acoes_registrar;RELEASE acoes_registrar');throw error;}
   }
   contar({estado='sugerido',conversa}={}){
+    return comLeituraOrganizacao(this.db,()=>this._contar({estado,conversa}));
+  }
+  _contar({estado,conversa}){
     const filtros={estado,conversa,agora:this.agora()};
     const {sql,parametros}=consultaAcoesLume(this.db,filtros);
     const totalWa=this.db.prepare(`SELECT COUNT(*) total ${sql}`).get(...parametros).total;
@@ -280,6 +291,9 @@ export class AcoesLume {
     return totalWa+totalLocal;
   }
   listar({estado='sugerido',limite=50,pagina=1,conversa}={}){
+    return comLeituraOrganizacao(this.db,()=>this._listar({estado,limite,pagina,conversa}));
+  }
+  _listar({estado,limite,pagina,conversa}){
     if(!Number.isInteger(limite)||limite<1||limite>100||!Number.isSafeInteger(pagina)||pagina<1||limite*pagina>1000000)throw new Error('Filtro de ações inválido.');
     const ate=limite*pagina;
     const filtros={estado,conversa,agora:this.agora()};

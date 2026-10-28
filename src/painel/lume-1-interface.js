@@ -6,9 +6,41 @@
   const status = text => { const n = el('p', text, 'lv-status'); n.setAttribute('role', 'status'); return n; };
   const button = (text, action) => { const n = el('button', text, 'lv-button'); n.type = 'button'; n.onclick = () => Promise.resolve().then(action).catch(error => { if(n.isConnected)n.after(status(error.message || 'Não foi possível concluir.')); }); return n; };
   const request = (path, body, signal) => window.lumeConnectionRequest(path, body, {timeout: 15000, signal});
-  const denied = error => [401,403,404,410].includes(error.status)||['SOURCE_CHANGED','FORBIDDEN','SOURCE_UNAVAILABLE','FONTE_INDISPONIVEL','PROJETO_INDISPONIVEL'].includes(error.code||error.codigo);
+  const denied = error => [401,403,404,410].includes(error.status)||['SOURCE_CHANGED','FONTE_ALTERADA','FORBIDDEN','SOURCE_UNAVAILABLE','FONTE_INDISPONIVEL','PROJETO_INDISPONIVEL'].includes(error.code||error.codigo);
   const date = value => { const d = value && new Date(value); return d && !Number.isNaN(d.getTime()) ? d.toLocaleString('pt-BR') : 'Data não informada'; };
   const tagLabels = {cliente:'Cliente',fornecedor:'Fornecedor',equipe:'Equipe',parceiro:'Parceiro',organizacao:'Organização',projeto:'Projeto'};
+  const interestLabels={frio:'Frio',morno:'Morno',quente:'Quente',insuficiente:'Sem informação suficiente'};
+  const coverageControllers=new Map();
+  if(!document.getElementById('lume-auto-style')){const style=el('link');style.id='lume-auto-style';style.rel='stylesheet';style.href='/lume-auto.css';document.head.append(style);}
+  function interesse(data={}){
+    const value=!data.desatualizada&&!data.incerta&&Object.hasOwn(interestLabels,data.temperatura)?data.temperatura:'insuficiente';
+    const badge=el('span',null,'la-interest');badge.dataset.temperature=value;
+    const bars=el('span',null,'la-interest-bars');bars.setAttribute('aria-hidden','true');for(let i=0;i<3;i++)bars.append(el('i'));
+    badge.append(bars,el('span','Interesse: '+interestLabels[value]));return badge;
+  }
+  function projectLinks(projects,root,selection={}){
+    if(!Array.isArray(projects)||!projects.length)return;
+    const links=el('div',null,'lv-toolbar la-project-links');links.setAttribute('aria-label','Projetos deste contexto');
+    for(const project of projects)if(project.id)links.append(button(project.nome||'Abrir projeto',()=>timeline({...selection,projeto:project.id,titulo:project.nome})));
+    root.append(links);
+  }
+  function reverInteresse(data,root,{signal,valid,refresh}){
+    const proof=data?.fontes?.find(item=>item?.eventoId!=null&&typeof item.trecho==='string'&&item.trecho);
+    if(!proof)return;
+    const details=el('details',null,'la-interest-correction');details.append(el('summary','Corrigir avaliação deste assunto'));
+    const form=el('form',null,'la-interest-form'),temperature=el('select'),stage=el('select');
+    temperature.setAttribute('aria-label','Interesse neste assunto');stage.setAttribute('aria-label','Etapa avaliada neste assunto');
+    for(const [value,label]of Object.entries(interestLabels))temperature.append(new Option(label,value));
+    for(const [value,label]of Object.entries({insuficiente:'Sem informação suficiente',interesse:'Interesse',proposta:'Proposta',conversa:'Em conversa',fechado:'Fechamento citado',encerrado:'Encerrado'}))stage.append(new Option(label,value));
+    temperature.value=data.desatualizada||data.incerta?'insuficiente':data.temperatura;stage.value=data.etapa||'insuficiente';
+    const temperatureLabel=el('label','Interesse neste assunto'),stageLabel=el('label','Etapa avaliada neste assunto');temperatureLabel.append(temperature);stageLabel.append(stage);
+    const save=el('button','Salvar minha avaliação','lv-button');save.type='submit';const feedback=status('');
+    form.append(el('p','Sua correção vale para este trecho e prevalece sobre novas sugestões. Não confirma uma venda nem autoriza envio.','lv-status'),el('blockquote',proof.trecho),temperatureLabel,stageLabel,save,feedback);details.append(form);root.append(details);
+    form.onsubmit=async event=>{event.preventDefault();if(save.disabled||!valid())return;save.disabled=true;feedback.textContent='Conferindo a fonte e salvando sua avaliação…';
+      try{await request('/api/v3/lume-1/organizacao/temperatura',{eventoId:proof.eventoId,trecho:proof.trecho,temperatura:temperature.value,etapa:stage.value},signal);if(valid())await refresh();}
+      catch(error){if(valid()){if(denied(error)){root.replaceChildren(status(error.message),button('Atualizar contexto',refresh));return;}feedback.textContent=error.message;save.disabled=false;}}
+    };
+  }
   const commitmentStates={sugerido:'Sugerido · confira a fonte',confirmado:'Confirmado',estacionado:'Estacionado',resolvido:'Conclusão informada',descartado:'Descartado',pendente:'Pendente',em_andamento:'Em andamento',concluido:'Conclusão informada',concluida:'Conclusão informada'};
   const executionStates={nenhuma:'Sem execução registrada',aguardando_assistente:'Aguardando executor',em_andamento:'Em execução',executando:'Em execução',resultado_informado:'Resultado informado · falta conferir',verificado:'Resultado verificado',verificada:'Resultado verificado',enviado:'Envio registrado',aceito:'Aceite registrado',aceita:'Aceite registrado',revogada:'Autorização revogada',invalidada:'Contexto alterado · confira',expirada:'Autorização expirada',indisponivel:'Execução indisponível',falhou:'Execução falhou',cancelada:'Execução cancelada'};
   const stateLabel=(value,labels)=>labels[value]||(typeof value==='string'?value.replaceAll('_',' '):'Não informado');
@@ -117,6 +149,11 @@
     }
     if(!tags.childNodes.length)tags.append(el('p','Sem classificação profissional confirmada.','lv-status'));card.append(tags);
     const actions=el('div',null,'lv-toolbar');actions.append(button('Ver timeline',()=>timeline({conversa:person.id,titulo:person.nome})),button('Corrigir tags',()=>correction(person)));card.append(actions);
+    projectLinks(person.projetos,card,{conversa:person.id});
+    if(Array.isArray(person.interesses)&&person.interesses.length){
+      const list=el('section',null,'la-person-interests');list.append(el('h3','Interesses por assunto'));
+      for(const item of person.interesses){const entry=el('div',null,'la-person-interest');entry.append(el('h4',item.nome||'Assunto comercial'),interesse(item));if(item.motivo)entry.append(el('p',item.motivo,'lv-card-meta'));entry.append(el('small','Sinais deste assunto · confira a fonte','lv-card-meta'));source(item,entry);list.append(entry);}card.append(list);
+    }
     organizations(person.organizacoes,card,{signal:peopleController?.signal,valid:()=>card.isConnected,refresh:()=>pessoas()});
     return card;
   }
@@ -182,7 +219,8 @@
           const conversationName=item.conversaNome||(typeof item.conversa==='object'?item.conversa.nome:null)||selection.titulo||(typeof item.conversa==='string'&&!item.conversa.includes('@')?item.conversa:'Conversa de origem');
           row.append(el('h3',item.autor||'Autoria não identificada'),el('p',[date(item.recebidoEm),conversationName,item.tipo].filter(Boolean).join(' · '),'lv-card-meta'));
           row.append(el('p',item.texto||'Fonte sem texto disponível.'));
-          for(const key of ['assuntos','projetos'])if(item[key]?.length)row.append(el('p',(key==='projetos'?'Projetos: ':'Assuntos: ')+item[key].map(v=>typeof v==='string'?v:v.nome||v.titulo||v.id).join(' · '),'lv-status'));
+          if(item.assuntos?.length)row.append(el('p','Assuntos: '+item.assuntos.join(' · '),'lv-status'));
+          projectLinks(item.projetos,row,{conversa:values.conversa});
           commitments(item.compromissos,row);
           occurrences(item.acontecimentos,row,item);
           organizations(item.organizacoes,row,{signal,valid:()=>ticket===panelRevision&&filterTicket===filterRevision&&!signal.aborted,refresh:()=>load()});
@@ -205,16 +243,61 @@
     else if(Number.isFinite(data.cobertura))root.append(el('p',data.cobertura+' fontes examinadas neste recorte.'));
     if(data.historicoCompleto===false)root.append(el('p','A cobertura do histórico é parcial.','lv-status'));
     if(Number.isFinite(data.abstidos))root.append(el('p',data.abstidos+' fontes sem classificação suficiente.','lv-status'));
-    if(data.limitacao)root.append(el('p',({avaliacao_pendente:'A organização automática aguarda a avaliação de qualidade.',conta_indisponivel:'A conta ChatGPT está indisponível. A memória salva continua acessível.'})[data.limitacao]||data.limitacao,'lv-status'));
+    if(data.limitacao)root.append(el('p',({avaliacao_pendente:'Organização ainda em preparação. Sua memória salva continua disponível.',conta_indisponivel:'A conta ChatGPT está indisponível. A memória salva continua acessível.'})[data.limitacao]||data.limitacao,'lv-status'));
   }
-  async function cobertura(root){
-    const box=el('details',null,'l1-coverage');box.append(el('summary','Organização das conversas'));root.append(box);
-    let loaded=false;
-    box.addEventListener('toggle',async()=>{
-      if(!box.open||loaded)return;loaded=true;const content=el('div',null,'lv-section');box.append(content);content.append(status('Consultando o processamento…'));
-      try{const data=await request('/api/v3/lume-1/central');if(!box.isConnected)return;content.replaceChildren();organization(data.organizacao,content);if(!data.organizacao)content.append(status('Estado do processamento não disponível.'));content.append(button('Abrir central',()=>central()));}
-      catch(error){if(box.isConnected){errors(content,error,()=>{loaded=false;box.open=false;box.open=true;});}}
-    });
+  function scopeControls(data,root,{signal,valid,refresh}){
+    const scope=data.escopo;if(!scope)return;
+    const details=el('details',null,'la-scope');details.append(el('summary','Conversas que o Lume organiza'));
+    details.append(el('p',scope.tipo==='todas'?'Todas as conversas atuais e futuras estão no escopo, respeitando as exclusões.':'O Lume organiza as conversas já autorizadas.'));
+    if(Number.isFinite(scope.conversasElegiveis))details.append(el('p',`${scope.conversasElegiveis} conversas elegíveis${Number.isFinite(scope.gruposElegiveis)?' · '+scope.gruposElegiveis+' grupos':''}.`,'lv-card-meta'));
+    const exclusions=Array.isArray(scope.exclusoes)?scope.exclusoes.length:scope.exclusoes;if(Number.isFinite(exclusions))details.append(el('p',exclusions+' exclusões preservadas.','lv-card-meta'));
+    const all=scope.tipo!=='todas',form=el('form',null,'la-scope-form'),label=el('label',null,'la-consent'),check=el('input');check.type='checkbox';check.required=true;
+    label.append(check,el('span',all?'Autorizo a conta ChatGPT conectada a organizar o conteúdo das conversas atuais e futuras, inclusive grupos. As exclusões serão respeitadas. Isso não autoriza enviar mensagens.':'Quero organizar apenas as conversas com autorização individual. As exclusões continuam valendo. Isso não muda as permissões de envio.'));
+    const submit=el('button',all?'Organizar todas as conversas':'Usar autorizações individuais','lv-button');submit.type='submit';const feedback=status('');form.append(label,submit,feedback);details.append(form);root.append(details);
+    form.onsubmit=async event=>{event.preventDefault();if(submit.disabled||!check.checked||!valid())return;submit.disabled=true;feedback.textContent='Salvando sua escolha…';
+      try{await request('/api/v3/lume-1/organizacao/escopo',{escopo:all?'todas':'autorizadas',confirmar:true},signal);if(valid())await refresh();}
+      catch(error){if(valid()){if(denied(error)){root.replaceChildren(status(error.message));return;}feedback.textContent=error.message;submit.disabled=false;}}
+    };
+  }
+  function questions(items,root,{signal,valid,refresh,limit=3}){
+    root.replaceChildren();const pending=Array.isArray(items)?items:[];
+    for(const item of pending.slice(0,limit)){
+      const card=el('article',null,'lv-card la-question');card.dataset.questionId=item.id;
+      card.append(el('small','Uma dúvida para organizar','lv-card-meta'),el('h3',item.pergunta||'A qual projeto este trecho pertence?'));
+      if(item.trecho){const excerpt=el('details');excerpt.append(el('summary','Ver o trecho'),el('blockquote',item.trecho));card.append(excerpt);}
+      const actions=el('div',null,'lv-toolbar'),feedback=status('');let busy=false;
+      const options=(item.opcoes||[]).filter(o=>o.projetoId);
+      async function answer(body){if(busy||!valid())return;busy=true;for(const control of actions.querySelectorAll('button,select'))control.disabled=true;feedback.textContent='Salvando sua resposta…';
+        try{await request('/api/v3/lume-1/organizacao/pergunta',{id:item.id,...body},signal);if(valid())await refresh();}
+        catch(error){if(valid()){if(denied(error)){root.replaceChildren(status(error.message),button('Atualizar contexto',refresh));return;}feedback.textContent=error.message;busy=false;for(const control of actions.querySelectorAll('button,select'))control.disabled=false;}}
+      }
+      if(options.length<=3){for(const option of options)actions.append(button(option.nome||'Este projeto',()=>answer({projetoId:option.projetoId})));}
+      else{const label=el('label','Projeto deste assunto'),select=el('select');select.setAttribute('aria-label','Projeto deste assunto');select.append(new Option('Escolha um projeto',''));for(const option of options)select.append(new Option(option.nome,option.projetoId));label.append(select);actions.append(label,button('Confirmar projeto',()=>{if(select.value)return answer({projetoId:select.value});feedback.textContent='Escolha um dos projetos.';}));}
+      actions.append(button('Adiar',()=>answer({adiar:true})));source(item,actions);card.append(actions,feedback);root.append(card);
+    }
+    if(pending.length>limit)root.append(button(`Ver mais ${pending.length-limit} dúvidas`,()=>central()));
+  }
+  async function cobertura(root,{perguntas}={}){
+    for(const [node,controller]of coverageControllers)if(!node.isConnected){controller.abort();coverageControllers.delete(node);}
+    const box=el('section',null,'l1-coverage la-coverage');box.setAttribute('aria-label','Organização das conversas');root.append(box);
+    const controller=new AbortController(),signal=controller.signal;coverageControllers.set(box,controller);
+    const valid=()=>box.isConnected&&!signal.aborted;
+    async function load(){
+      const restoreFocus=box.contains(document.activeElement)||perguntas?.contains(document.activeElement);
+      box.replaceChildren(status('Consultando a organização das conversas…'));box.setAttribute('aria-busy','true');if(perguntas)perguntas.replaceChildren();
+      try{const data=await request('/api/v3/lume-1/central',undefined,signal);if(!valid())return;box.replaceChildren();
+        const org=data.organizacao;if(!org){box.append(status('Estado da organização não disponível.'),button('Tentar novamente',load));return;}
+        const summary=el('div',null,'la-coverage-summary');summary.append(el('strong',org.limitacao==='avaliacao_pendente'?'Organização ainda em preparação':organizationLabels[org.estado]||'Organização das conversas'));
+        const scope=org.escopo;summary.append(el('p',(scope?.tipo==='todas'?'Conversas atuais e futuras, respeitando as exclusões.':'Conversas autorizadas, respeitando as exclusões.')+(Number.isFinite(org.processados)?` ${org.processados} fontes processadas.`:'')+(Number.isFinite(org.pendentes)?` ${org.pendentes} pendentes.`:''),'lv-card-meta'));box.append(summary);
+        const more=el('details',null,'la-coverage-detail');more.append(el('summary','Ver cobertura e controles'));const content=el('div',null,'la-coverage-content');organization(org,content);scopeControls(org,content,{signal,valid,refresh:load});
+        const controls=el('div',null,'lv-toolbar');controls.append(button('Abrir central',()=>central()));
+        if(['pausado','pausada'].includes(org.estado))controls.append(button('Retomar organização',async()=>{await request('/api/v3/lume-1/organizacao',{acao:'retomar'},signal);if(valid())await load();}));
+        if(org.limitacao==='conta_indisponivel')controls.append(button('Ver conexão ChatGPT',()=>window.abrirAjuste?.('pessoal-panel')));
+        content.append(controls);more.append(content);box.append(more);
+        if(perguntas)questions(org.perguntas,perguntas,{signal,valid,refresh:load});
+      }catch(error){if(valid())errors(box,error,load);}finally{if(valid()){box.setAttribute('aria-busy','false');if(restoreFocus)(perguntas?.querySelector('button')||box.querySelector('summary,button'))?.focus({preventScroll:true});}}
+    }
+    await load();
   }
   async function central(){
     const body=open('Central de acontecimentos');const ticket=panelRevision;panelController=new AbortController();const signal=panelController.signal;
@@ -222,7 +305,8 @@
     try{
       const data=await request('/api/v3/lume-1/central',undefined,signal);if(ticket!==panelRevision||signal.aborted)return;
       body.replaceChildren();const progress=el('section',null,'lv-section');progress.append(el('h3','Organização das conversas'));organization(data.organizacao,progress);
-      if(data.organizacao){const paused=['pausado','pausada'].includes(data.organizacao.estado);const control=button(paused?'Retomar organização':'Pausar organização',async()=>{control.disabled=true;try{await request('/api/v3/lume-1/organizacao',{acao:paused?'retomar':'pausar'},signal);if(ticket===panelRevision)await central();}catch(error){if(ticket===panelRevision){control.disabled=false;control.after(status(error.message));}}});progress.append(control,el('p','Essa pausa controla a organização; as permissões de leitura e atendimento continuam nos Ajustes.','lv-status'));}body.append(progress);
+      if(data.organizacao){const paused=['pausado','pausada'].includes(data.organizacao.estado);const control=button(paused?'Retomar organização':'Pausar organização',async()=>{control.disabled=true;try{await request('/api/v3/lume-1/organizacao',{acao:paused?'retomar':'pausar'},signal);if(ticket===panelRevision)await central();}catch(error){if(ticket===panelRevision){control.disabled=false;control.after(status(error.message));}}});progress.append(control,el('p','Essa pausa controla a organização; as permissões de leitura e atendimento continuam nos Ajustes.','lv-status'));scopeControls(data.organizacao,progress,{signal,valid:()=>ticket===panelRevision&&!signal.aborted,refresh:central});}body.append(progress);
+      if(data.organizacao?.perguntas?.length){const pending=el('section',null,'lv-section la-questions');body.append(pending);questions(data.organizacao.perguntas,pending,{signal,valid:()=>ticket===panelRevision&&!signal.aborted,refresh:central,limit:Infinity});}
       for(const [key,title]of [['acontecimentos','Acontecimentos locais'],['comunicados','Comunicados do Lume']]){
         const section=el('section',null,'lv-section');section.append(el('h3',title));
         const items=Array.isArray(data[key])?data[key]:[];
@@ -299,7 +383,8 @@
   }
   window.addEventListener('lume:navigate',()=>{close(false);peopleRevision++;peopleController?.abort();});
   window.addEventListener('lume:invalidate',()=>{close(false);peopleRevision++;peopleController?.abort();peopleRoot.replaceChildren();peopleQuery='';});
-  window.LumeUm=Object.freeze({pessoas,timeline,central,cobertura});globalControls();mapRecovery();
+  for(const event of ['lume:navigate','lume:invalidate'])window.addEventListener(event,()=>{for(const [node,controller]of coverageControllers){controller.abort();if(event==='lume:invalidate')node.replaceChildren();}coverageControllers.clear();if(event==='lume:invalidate')document.querySelectorAll('.la-questions').forEach(node=>node.replaceChildren());});
+  window.LumeUm=Object.freeze({pessoas,timeline,central,cobertura,interesse,reverInteresse});globalControls();mapRecovery();
   window.addEventListener('lume:navigate',()=>void identity(),{once:true});
   const tools=$('lv-memory-tools');if(tools)tools.prepend(button('Timeline',()=>timeline()));
 })();

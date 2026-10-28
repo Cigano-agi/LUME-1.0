@@ -1,4 +1,5 @@
 import {ATIVIDADE_COLUNAS} from './atividade-apps.js';
+import {derivacaoOrganizacaoAtual} from './pessoal/organizacao-validade.js';
 import {randomUUID,createHash} from 'node:crypto';
 import {exigirPessoalSemConteudo,TABELAS_PESSOAIS} from './pessoal/preservacao.js';
 import {chaveExclusao,chaveConversa} from './exclusoes.js';
@@ -72,7 +73,24 @@ export class Privacidade {
   // O catálogo reconhece a migração, mas v8 não pode exportar/excluir reunião.
   // Direitos e backup v9 serão tratados na 11-03; falhar fechado enquanto houver dados.
   if(this.tem('notetaker_sessoes')&&this.db.prepare('SELECT 1 FROM notetaker_sessoes LIMIT 1').get())throw new Error('Há sessões locais sem contrato de backup e exclusão v9.');}
-  dadosCiclo(ids,{exportacao=false,tudo=false,conversa=''}={}){
+  // Dependências de inferências não são vínculos entre mensagens originais:
+  // apagar o contexto retira a conclusão, mas preserva a mensagem-alvo.
+  organizacaoDependente(ids,{tudo=false}={}){
+    const alvos=new Set(ids),json=v=>{try{return JSON.parse(v);}catch{return null;}},prefixo='lume-1-organizacao-';
+    const depende=r=>r&&(tudo||alvos.has(r.eventoId)||(r.contexto?.fontes||[]).some(f=>alvos.has(f.eventoId)));
+    const configs=this.tem('desktop_config')?this.db.prepare("SELECT chave,valor FROM desktop_config WHERE chave LIKE 'lume-1-organizacao-%' ORDER BY chave").all():[];
+    const etapas=this.tem('etapas')?this.db.prepare("SELECT * FROM etapas WHERE etapa='organizacao_chatgpt' ORDER BY evento_id").all().filter(e=>tudo||alvos.has(e.evento_id)||depende(json(e.resultado))):[];
+    const perguntas=new Set(etapas.flatMap(e=>(json(e.resultado)?.perguntas||[]).map(q=>q.id)));
+    const selecionados=configs.filter(c=>{
+      const key=c.chave.slice(prefixo.length),r=json(c.valor);
+      if(/^(acao-inferida|projeto-inferido|vinculo-inferido):/.test(key))return depende(r);
+      if(/^(vinculo|organizacoes|temperatura|fonte-revisao):/.test(key))return tudo||alvos.has(Number(key.slice(key.indexOf(':')+1)));
+      return key.startsWith('pergunta:')&&(tudo||perguntas.has(key.slice(9)));
+    });
+    const idsTipo=tipo=>selecionados.filter(c=>c.chave.startsWith(prefixo+tipo+':')).map(c=>c.chave.slice((prefixo+tipo+':').length));
+    return {configs:selecionados,etapas,acoes:idsTipo('acao-inferida'),projetos:idsTipo('projeto-inferido'),vinculos:idsTipo('vinculo-inferido')};
+  }
+  dadosCiclo(ids,{exportacao=false,tudo=false,conversa='',organizacao=null}={}){
     const escolhidos=new Set(ids),ler=t=>this.tem(t)?this.db.prepare(`SELECT ${CICLO_COLUNAS[t].join(',')} FROM ${t}`).all():[];
     const todasFontes=this.db.prepare('SELECT id,conversa_id FROM eventos').all(),conversas=new Set(todasFontes.filter(e=>escolhidos.has(e.id)).map(e=>e.conversa_id));
     if(conversa)conversas.add(conversa);
@@ -93,7 +111,7 @@ export class Privacidade {
       // Uma origem desconhecida não amplia a exclusão para outras conversas.
       // Nesses legados, segue o vínculo atual da ação ou a exclusão completa;
       // a exportação continua exigindo a fonte original íntegra abaixo.
-      if(!completo&&!escolhidos.has(fonteId)&&!escolhidos.has(atualId))return false;
+      if(!completo&&!escolhidos.has(fonteId)&&!escolhidos.has(atualId)&&!(!exportacao&&organizacao?.acoes.includes(c.acao_id)))return false;
       if(!exportacao)return true;
       return escolhidos.has(atualId)&&escolhidos.has(fonteId)&&integridade?.fonte===this.db.prepare(`SELECT ${HASH_FONTE_SQL} assinatura FROM desktop_fontes e WHERE id=?`).get(fonteId)?.assinatura;
     });
@@ -117,14 +135,14 @@ export class Privacidade {
       return !fonteAlterada&&!contextoAlterado;
     });
     const links=ler('lume_projetos_fontes');
-    const fontePermitida=f=>escolhidos.has(f.evento_id)&&!f.removida&&!f.invalidada&&f.assinatura===this.db.prepare(`SELECT ${HASH_FONTE_SQL} assinatura FROM desktop_fontes e WHERE id=?`).get(f.evento_id)?.assinatura;
+    const fontePermitida=f=>escolhidos.has(f.evento_id)&&!f.removida&&!f.invalidada&&derivacaoOrganizacaoAtual(this.db,'vinculo',f.id,{ids:escolhidos})&&f.assinatura===this.db.prepare(`SELECT ${HASH_FONTE_SQL} assinatura FROM desktop_fontes e WHERE id=?`).get(f.evento_id)?.assinatura;
     r.lume_projetos_comerciais=ler('lume_projetos_comerciais').filter(p=>{
       const fontes=links.filter(f=>f.projeto_id===p.id);
-      if(!exportacao)return completo||fontes.some(f=>f.base&&escolhidos.has(f.evento_id));
-      const bases=fontes.filter(f=>f.base);return bases.length===p.bases_total&&bases.every(fontePermitida);
+      if(!exportacao)return completo||organizacao?.projetos.includes(p.id)||fontes.some(f=>f.base&&escolhidos.has(f.evento_id));
+      const bases=fontes.filter(f=>f.base);return derivacaoOrganizacaoAtual(this.db,'projeto',p.id,{ids:escolhidos})&&bases.length===p.bases_total&&bases.every(fontePermitida);
     });
     const projetos=new Set(r.lume_projetos_comerciais.map(p=>p.id));
-    r.lume_projetos_fontes=links.filter(f=>exportacao?projetos.has(f.projeto_id)&&fontePermitida(f):projetos.has(f.projeto_id)||escolhidos.has(f.evento_id));
+    r.lume_projetos_fontes=links.filter(f=>exportacao?projetos.has(f.projeto_id)&&fontePermitida(f):projetos.has(f.projeto_id)||escolhidos.has(f.evento_id)||organizacao?.vinculos.includes(String(f.id)));
     const fontesProjeto=new Set(r.lume_projetos_fontes.map(f=>f.id));
     r.lume_projetos_historico=ler('lume_projetos_historico').filter(h=>exportacao?projetos.has(h.projeto_id)&&(h.fonte_id===null||fontesProjeto.has(h.fonte_id)):projetos.has(h.projeto_id)||fontesProjeto.has(h.fonte_id));
     const refs=new Set(Object.entries(r).flatMap(([t,rows])=>rows.map(row=>JSON.stringify([t,cicloRegistroId(t,row)]))));
@@ -184,7 +202,9 @@ export class Privacidade {
     const sugestoes=this.tem('desktop_tarefas_sugestoes')?this.db.prepare('SELECT * FROM desktop_tarefas_sugestoes WHERE id IN(SELECT id FROM priv_sugestoes) ORDER BY id').all():[];
     const fontesTarefas=this.tem('desktop_tarefas_fontes')?this.db.prepare('SELECT * FROM desktop_tarefas_fontes WHERE sugestao_id IN(SELECT id FROM priv_sugestoes) ORDER BY sugestao_id,evento_id').all():[];
     contagens.desktop_tarefas_sugestoes=sugestoes.length;contagens.desktop_tarefas_fontes=fontesTarefas.length;
-    const acoes=this.tem('lume_acoes')?this.db.prepare(`SELECT * FROM lume_acoes WHERE evento_id IN(SELECT id FROM priv_alvo) ORDER BY id`).all():[];
+    const organizacao=this.organizacaoDependente([...selection.ids,...selection.preservados],{tudo:filtro.tudo});
+    const alvosOrganizacao=new Set(selection.ids);
+    const acoes=this.tem('lume_acoes')?this.db.prepare('SELECT * FROM lume_acoes ORDER BY id').all().filter(a=>alvosOrganizacao.has(a.evento_id)||organizacao.acoes.includes(a.id)):[];
     const idsAcoes=new Set(acoes.map(a=>a.id));
     const historicoAcoes=this.tem('lume_acoes_historico')?this.db.prepare('SELECT * FROM lume_acoes_historico ORDER BY id').all().filter(h=>idsAcoes.has(h.acao_id)):[];
     contagens.lume_acoes=acoes.length;contagens.lume_acoes_historico=historicoAcoes.length;
@@ -231,9 +251,10 @@ export class Privacidade {
     for(const path of paths)this.arquivos.conferir(path);
     const rows=this.db.prepare('SELECT e.* FROM eventos e JOIN priv_alvo a ON a.id=e.id ORDER BY e.id').all();
     const origem=selection.filtro.origem?this.db.prepare('SELECT * FROM f10_procedencias WHERE fingerprint=? ORDER BY evento_id,pacote_id,projeto_id').all(selection.filtro.origem):null;
-    const ciclo=this.dadosCiclo([...selection.ids,...selection.preservados],{tudo:filtro.tudo,conversa:filtro.conversa});
+    contagens.organizacao_resultados=organizacao.etapas.length;contagens.organizacao_registros=organizacao.configs.length;
+    const ciclo=this.dadosCiclo([...selection.ids,...selection.preservados],{tudo:filtro.tudo,conversa:filtro.conversa,organizacao});
     for(const [t,rs] of Object.entries(ciclo))contagens[t]=rs.length;
-    return {...selection,contagens,arquivos:paths,caixas,ciclo,assinatura:checksum({rows,midias,contagens,paths,origem,preservados:selection.preservados,sugestoes,fontesTarefas,acoes,historicoAcoes,negocios,historicoNegocios,comandos,comandosTarefas,comandosLembretes,tagsEntidades,tags,whatsappAssociacoes,whatsappLabels,whatsappObservacoes,ciclo}),match,matchCrm};
+    return {...selection,contagens,arquivos:paths,caixas,ciclo,organizacao,assinatura:checksum({rows,midias,contagens,paths,origem,preservados:selection.preservados,sugestoes,fontesTarefas,acoes,historicoAcoes,negocios,historicoNegocios,comandos,comandosTarefas,comandosLembretes,tagsEntidades,tags,whatsappAssociacoes,whatsappLabels,whatsappObservacoes,ciclo,organizacao}),match,matchCrm};
   }
   preparar(filtro){const m=this.mapa(filtro),id=randomUUID();this.previas.clear();this.previas.set(id,{filtro:m.filtro,assinatura:m.assinatura,expira:Date.now()+300000});return {id,contagens:m.contagens,arquivos:m.arquivos,aviso:'Inclui conteúdo oculto, notas vinculadas, negócios e suas alterações registradas. Saídas preparadas das conversas atingidas, diagnósticos e registros locais de entrega ao Punk serão limpos. Cópias manuais, exports e backups externos permanecem. Captura e IA serão pausadas. Nome, aceite e credenciais do perfil permanecem.'};}
   excluir({id,confirmar}={}){
@@ -247,6 +268,9 @@ export class Privacidade {
       const atual=this.mapa(p.filtro);if(atual.assinatura!==p.assinatura)throw new Error('Os dados mudaram. Confira novamente.');
       op=this.arquivos?.preparar(reciboId,m.arquivos);
       this.excluirCiclo(atual.ciclo);
+      for(const id of atual.organizacao.acoes)if(this.tem('lume_acoes'))this.db.prepare('DELETE FROM lume_acoes WHERE id=?').run(id);
+      for(const e of atual.organizacao.etapas)this.db.prepare("UPDATE etapas SET estado='pendente',resultado=NULL,lease_token=NULL,lease_ate=NULL,ultimo_erro='contexto_excluido',proxima_tentativa_em=NULL WHERE evento_id=? AND etapa='organizacao_chatgpt'").run(e.evento_id);
+      for(const c of atual.organizacao.configs)this.db.prepare('DELETE FROM desktop_config WHERE chave=?').run(c.chave);
       if(m.filtro.origem){
         this.db.prepare('INSERT OR REPLACE INTO f10_revogadas VALUES(?,?)').run(m.filtro.origem,now);
         this.db.prepare('DELETE FROM f10_procedencias WHERE fingerprint=?').run(m.filtro.origem);
@@ -350,7 +374,7 @@ export class Privacidade {
       if(derivados.itens_crm)derivados.itens_crm=derivados.itens_crm.filter(i=>!bloqueados.has(i.id));
     }
     if(this.tem('lume_acoes')){
-      derivados.lume_acoes=this.db.prepare(`SELECT a.* FROM lume_acoes a JOIN desktop_fontes e ON e.id=a.evento_id WHERE a.fonte_assinatura=${HASH_FONTE_SQL} ORDER BY a.id`).all().filter(a=>ids.has(a.evento_id));
+      derivados.lume_acoes=this.db.prepare(`SELECT a.* FROM lume_acoes a JOIN desktop_fontes e ON e.id=a.evento_id WHERE a.fonte_assinatura=${HASH_FONTE_SQL} ORDER BY a.id`).all().filter(a=>ids.has(a.evento_id)&&derivacaoOrganizacaoAtual(this.db,'acao',a.id,{ids}));
       const acoesIds=new Set(derivados.lume_acoes.map(a=>a.id));
       derivados.lume_acoes_historico=this.db.prepare('SELECT * FROM lume_acoes_historico ORDER BY id').all().filter(h=>acoesIds.has(h.acao_id));
     }

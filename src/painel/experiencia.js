@@ -83,11 +83,15 @@
     context.append(confirmed);
     if (item.avaliacao) {
       const manual = item.avaliacao.origem === 'manual';
+      const unavailable=item.avaliacao.desatualizada||item.avaliacao.incerta;
+      const temperature=unavailable?'insuficiente':item.avaliacao.temperatura;
       const assessment = el('div', null, 'lv-commercial-assessment');
       assessment.dataset.evidence = manual ? 'manual' : 'inferred';
       assessment.append(el('strong', manual ? 'Avaliação registrada por você' : 'Avaliação inferida · confira'),
-        el('p', 'Etapa avaliada: ' + (salesStages[item.avaliacao.etapa] || 'Informação insuficiente')),
-        el('p', 'Interesse: ' + (interests[item.avaliacao.temperatura] || 'informação insuficiente')));
+        el('p', 'Etapa avaliada: ' + (unavailable?'Informação insuficiente':salesStages[item.avaliacao.etapa] || 'Informação insuficiente')),
+        window.LumeUm?.interesse?window.LumeUm.interesse(item.avaliacao):el('p', 'Interesse: ' + (interests[temperature] || 'informação insuficiente')));
+      if(item.avaliacao.motivo)assessment.append(el('p',item.avaliacao.motivo,'lv-card-meta'));
+      if(unavailable)assessment.append(el('p',item.avaliacao.desatualizada?'O contexto mudou. Confira a fonte antes de usar esta avaliação.':'Ainda falta informação para avaliar o interesse.','lv-status'));
       context.append(assessment);
     } else context.append(el('p', 'Avaliação comercial indisponível.', 'lv-card-meta'));
     return context;
@@ -110,6 +114,7 @@
     open.dataset.variant = 'quiet';
     title.append(open);
     node.append(meta, title);
+    if(item.projeto?.nome&&item.projeto.nome!==item.assunto)node.append(el('p','Projeto: '+item.projeto.nome,'lv-card-meta'));
     const people = (item.pessoas || []).map(p => typeof p === 'string' ? p : p.nome).filter(Boolean);
     if (item.acontecimento) node.append(el('p', item.acontecimento.length > 160 ? item.acontecimento.slice(0, 159) + '…' : item.acontecimento, 'lv-card-summary'));
     if (item.consequencia && !genericConsequences.has(item.consequencia)) node.append(el('p', item.consequencia, 'lv-card-summary'));
@@ -145,7 +150,7 @@
       more.setAttribute('aria-expanded', 'false'); more.setAttribute('aria-controls', remaining.id);
       section.append(remaining, more);
     }
-    parent.append(section);
+    parent.append(section);return section;
   }
   function render(root, view, data, selection = {category: '', mode: 'list'}) {
     const heading = el('header', null, 'lv-page-heading');
@@ -156,7 +161,8 @@
     tools.append(button('Atualizar', () => carregar(view)));
     if(view==='deliveries'&&window.LumeUm)tools.append(button('Timeline de projetos',()=>window.LumeUm.timeline()));
     heading.append(tools); root.replaceChildren(heading);
-    if(view==='today'&&window.LumeUm)window.LumeUm.cobertura(root);
+    const organizationSlot=el('div',null,'la-organization-slot'),questionsSlot=el('div',null,'la-questions');
+    if(['today','deliveries'].includes(view))root.append(organizationSlot);
     const connection = data.conexao;
     if (connection) root.append(notice(typeof connection === 'string' ? connection : connection.mensagem || `Conexão: ${connectionLabels[connection.estado] || 'estado não informado'} · captura: ${connectionLabels[connection.captura] || 'estado não informado'} · processamento: ${connectionLabels[connection.processamento] || 'estado não informado'}. A memória salva continua disponível.`, 'lv-connection'));
     gaps(data.lacunas, root);
@@ -169,7 +175,8 @@
       content.replaceChildren();
       const entries = data.itens.filter(item => (view !== 'sales' || item.categoria === 'comercial') && (view !== 'deliveries' || (['entregas', 'projetos'].includes(item.categoria) || item.projeto)) && (!category.value || item.categoria === category.value));
       if (view === 'today') {
-        group(content, 'Precisa de você', entries.filter(item => item.grupo === 'precisa'), true);
+        const needs=group(content, 'Precisa de você', entries.filter(item => item.grupo === 'precisa'), true);
+        needs.querySelector('.lv-list').prepend(questionsSlot);
         group(content, 'Em acompanhamento', entries.filter(item => item.grupo === 'cuidando'), true);
         group(content, 'Aconteceu', entries.filter(item => item.grupo === 'mudou'), true);
         if (entries.some(item => !['precisa', 'cuidando', 'mudou'].includes(item.grupo))) content.append(notice('Há assuntos sem agrupamento disponível. Consulte a memória para conferir o recorte.'));
@@ -191,6 +198,7 @@
     }
     if (view === 'deliveries') root.append(el('p', 'Informado, verificado, enviado e aceito são etapas distintas. A conclusão relatada não comprova aceite.', 'lv-status'));
     if(filters.childNodes.length)root.append(filters);root.append(content); paint();
+    if(['today','deliveries'].includes(view)&&window.LumeUm)void window.LumeUm.cobertura(organizationSlot,{perguntas:view==='today'?questionsSlot:null});
     window.LumePresenca?.montar(root,{estado:data.itens.some(item=>item.grupo==='precisa')?'atencao':'aguardando'});
     if(view==='today')window.LumeAtividade?.resumo(root);
     if (data.proximaPagina != null) {
@@ -341,7 +349,7 @@
       if(item.assunto?.length>140)detailSection(body,'Assunto completo',item.assunto);
       detailSection(body, 'Contexto', item.acontecimento || action?.trecho || item.assunto);
       detailSection(body, 'Estado e origem', `${item.estadoRotulo || states[item.estado] || item.estado || 'Estado não informado'} · ${origins[item.origem] || 'Origem não informada'}`);
-      if (item.categoria === 'comercial') detailSection(body, 'Contexto comercial').append(commercialContext(item));
+      if (item.categoria === 'comercial') {const commercial=detailSection(body, 'Contexto comercial');commercial.append(commercialContext(item));window.LumeUm?.reverInteresse?.(item.avaliacao,commercial,{signal:controller.signal,valid,refresh:()=>abrirAssunto(id)});}
       detailSection(body, 'Responsável', typeof item.responsavel === 'string' ? item.responsavel : item.responsavel?.nome || 'Responsável não informado');
       detailSection(body, 'Prazo', item.prazo || 'Prazo não informado');
       if (item.categoria === 'entregas') {

@@ -1,4 +1,5 @@
 import {criarNomeVisivel} from './nomes-conversa.js';
+import {comLeituraOrganizacao} from './pessoal/organizacao-validade.js';
 
 const parse = value => { try { return JSON.parse(value || 'null'); } catch { return null; } };
 const iso = value => typeof value === 'string' && Number.isFinite(Date.parse(value)) ? value : null;
@@ -12,6 +13,9 @@ export class ExperienciaLume {
     this.nome=criarNomeVisivel(db);
   }
   listar({pagina=1,limite=30}={}) {
+    return comLeituraOrganizacao(this.db,()=>this._listar({pagina,limite}));
+  }
+  _listar({pagina,limite}) {
     if(!Number.isSafeInteger(pagina)||pagina<1||pagina>1000||!Number.isSafeInteger(limite)||limite<1||limite>50)throw Error('Paginação inválida.');
     const atualizadoEm=this.agora().toISOString(),lacunas=[];
     if(!this.acoes)return {versao:1,atualizadoEm,itens:[],lacunas:['A organização de assuntos está indisponível neste ambiente.'],conexao:{estado:'indisponivel'},pagina,proximaPagina:null};
@@ -46,6 +50,9 @@ export class ExperienciaLume {
       conexao:{estado:connection?.estado||'indisponivel',captura:capturaPausada?'pausada':connection?.estado==='conectada'?'disponivel':'indisponivel',processamento:this.pessoal?.running?'em_andamento':'sem_execucao_observada'}};
   }
   obter(id){
+    return comLeituraOrganizacao(this.db,()=>this._obter(id));
+  }
+  _obter(id){
     if(typeof id!=='string'||!/^(?:(?:acao|projeto):[0-9a-f-]{36}|acontecimento:[1-9][0-9]*:[0-3])$/i.test(id))throw Error('Assunto inválido.');
     const action=id.startsWith('acao:')?this.acoes?.obter(id.slice(5)):null;
     const event=id.startsWith('acontecimento:')?this.pessoal?.organizador?.acontecimento(Number(id.split(':')[1]),Number(id.split(':')[2])):null;
@@ -65,6 +72,7 @@ export class ExperienciaLume {
     const changed=action.estado==='resolvido'||execution.estado==='verificado';
     const working=execution.estado==='em_andamento'||followingActive;
     const inferred=this.pessoal?.organizador?.sugestoes(action.evento_id);
+    if(this.pessoal?.organizador?.config('acao-inferida:'+action.id)&&!inferred&&action.estado==='sugerido')return null;
     const overlap=v=>v.inicio<=action.trecho_inicio&&v.inicio+v.trecho.length>=action.trecho_inicio+action.trecho.length;
     const oportunidade=inferred?.oportunidades?.some(overlap),vinculo=inferred?.vinculos?.find(v=>v.tipo==='projeto'&&v.projetoId&&overlap(v));
     const manual=this.pessoal?.organizador?.vinculoManual(action.evento_id,action.trecho_inicio,action.trecho.length);
@@ -91,7 +99,7 @@ export class ExperienciaLume {
       tags:this.pessoal?.organizador?.tags(action.conversa_id)||[],organizacao:inferred?{origem:inferred.origem,atualizadoEm:inferred.atualizadoEm,assuntos:inferred.assuntos}:null,
       prazo:action.prazo_citado||null,responsavel:action.responsavel_id?{id:action.responsavel_id,nome:this.nome(null,action.responsavel_id)}:null,
       acompanhamento:following?{ativo:followingActive,proximaVerificacao:iso(acompanhamento.proxima)}:null,
-      execucao:execution,avaliacao:organized?.avaliacao||null,negocio:organized?.negocio||null,
+      execucao:execution,avaliacao:organized?.avaliacao?.origem==='manual'?organized.avaliacao:this.pessoal?.organizador?.avaliacao(action.evento_id,action.trecho_inicio,action.trecho.length)||organized?.avaliacao||null,negocio:organized?.negocio||null,
       entrega:{informada:execution.estado==='resultado_informado'||execution.estado==='verificado',verificada:execution.estado==='verificado',enviada:null,aceita:null},
       fonte:{id:source.id,eventoId:source.id,tipo:source.tipo,conversaId:source.conversa_id,autor:source.autor_nome,recebidoEm:source.recebido_em,trecho:action.trecho},
       acoes};

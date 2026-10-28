@@ -23,7 +23,8 @@ async function fixture(t){
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port,{token}=await(await fetch(origin+'/api/sessao')).json();
   t.after(async()=>{await new Promise(r=>{server.close(r);server.closeAllConnections();});await org.encerrar();db.close();});
   const request=async(route,body)=>{const response=await fetch(origin+route,{method:body?'POST':'GET',headers:{'x-assessor-token':token,...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});return{status:response.status,data:await response.json()};};
-  return{db,org,id,get:request,post:request,setResult:value=>{result=value;},reprocess:async()=>{db.prepare("DELETE FROM etapas WHERE evento_id=? AND etapa='organizacao_chatgpt'").run(id);return org.passo();}};
+  // This fixture requests immediate reprocessing, independently of the bounded sweep cursor.
+  return{db,org,id,get:request,post:request,setResult:value=>{result=value;},reprocess:async()=>{db.prepare("DELETE FROM etapas WHERE evento_id=? AND etapa='organizacao_chatgpt'").run(id);org.config('cursor',null);return org.passo();}};
 }
 
 test('G01 backend: acontecimento sem compromisso aparece na central com fonte e sem assunto fabricado',async t=>{

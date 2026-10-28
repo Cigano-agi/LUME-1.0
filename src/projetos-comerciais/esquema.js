@@ -49,11 +49,14 @@ export function prepararProjetosComerciais(db){
     WHEN ${campos.map(c=>`old.${c} IS NOT new.${c}`).join(' OR ')} BEGIN
       UPDATE lume_projetos_fontes SET invalidada=1 WHERE evento_id=old.id;
     END;`);
-  const revogar=`UPDATE lume_projetos_fontes SET invalidada=1 WHERE evento_id IN
-    (SELECT e.id FROM desktop_fontes e WHERE NOT COALESCE(${LEITURA_SQL},0));`;
   for(const [tabela,sufixo] of [['politicas_conversa','politica'],['f10_procedencias','procedencia']]){
     for(const [acao,nome] of [['UPDATE','alterada'],['DELETE','apagada']]){
-      db.exec(`CREATE TRIGGER IF NOT EXISTS lume_projetos_${sufixo}_${nome} AFTER ${acao} ON ${tabela} BEGIN ${revogar} END;`);
+      const coluna=tabela==='politicas_conversa'?'conversa_id':'evento_id',refs=acao==='UPDATE'?`old.${coluna},new.${coluna}`:`old.${coluna}`;
+      const inicio=tabela==='politicas_conversa'?`conversa_id IN(${refs})`:`id IN(${refs})`;
+      const afetadas=`e.id IN(WITH RECURSIVE afetados(id) AS (SELECT id FROM eventos WHERE ${inicio} UNION SELECT v.derivado_id FROM priv_vinculos v JOIN afetados a ON v.fonte_id=a.id) SELECT id FROM afetados)`;
+      const revogar=`UPDATE lume_projetos_fontes SET invalidada=1 WHERE evento_id IN
+        (SELECT e.id FROM desktop_fontes e WHERE ${afetadas} AND NOT COALESCE(${LEITURA_SQL},0));`;
+      db.exec(`DROP TRIGGER IF EXISTS lume_projetos_${sufixo}_${nome}; CREATE TRIGGER lume_projetos_${sufixo}_${nome} AFTER ${acao} ON ${tabela} BEGIN ${revogar} END;`);
     }
   }
   if(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='transcricoes'").get()){
