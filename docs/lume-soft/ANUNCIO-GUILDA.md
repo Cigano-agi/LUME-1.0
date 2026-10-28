@@ -15,9 +15,9 @@ Uma primeira versão em testes para quem cuida de vendas, equipe e projetos ao m
 - 📌 **Agora:** veja o que precisa da sua atenção e o que está em andamento.
 - 👻 **Companhia:** um fantasminha opcional com avisos e som que você controla.
 
-🎁 **Quer baixar e testar? Por enquanto é grátis! Me chama para entrar no piloto e receber acesso.**
+🎁 **Por enquanto é grátis! Conheça o projeto: https://github.com/Cigano-agi/LUME-1.0 — quer testar? Me chama para entrar no piloto.**
 
-Nota editorial, fora da mensagem: o repositório continua privado e não há download público validado. O CTA solicita acesso ao piloto; não informa que o pacote já está disponível para todos. A gratuidade foi reafirmada pelo usuário em 27/10/2026. A mensagem não foi enviada.
+Nota editorial, fora da mensagem: em 28/10/2026, a API do GitHub informa o repositório como público. Ainda não há download público validado. O CTA oferece o código e solicita entrada no piloto; não informa que o instalador já está disponível para todos. A gratuidade foi reafirmada pelo usuário em 27/10/2026. A mensagem não foi enviada.
 
 ## Cada função, sem complicação
 

@@ -6,13 +6,13 @@
 
 Lume reúne memória de conversas autorizadas, compromissos e projetos em um aplicativo desktop. O contexto fica ligado à sua origem; sugestões podem ser corrigidas e resultados têm estados distintos de conclusão, verificação, envio e aceite.
 
-**LUME 1.0 · prévia desktop · técnica `3.2.0-beta.9`**
+**LUME 1.0 · prévia desktop · técnica `3.2.0-beta.10`**
 
 [Conheça o produto](#um-lugar-para-recuperar-o-contexto) · [Experiência e privacidade](docs/lume-soft/README.md) · [Desenvolvimento](#desenvolvimento) · [Documentação](docs/README.md) · [Estado da entrega](DONE.md)
 
-**Prévia em validação.** A beta.9 corrige o espaçamento das telas e acrescenta prova do áudio sintetizado. A versão instalada permanece beta.7; o bloqueio anterior ocorreu no script, antes do instalador. Organização com dados reais, aceite de utilidade, macOS e hardware de 8 GB ainda têm validações pendentes. Consulte o [estado da entrega](DONE.md), os [ajustes atuais](docs/lume-soft/AJUSTES-LAYOUT-SOM.md) e o [registro anterior](docs/lume-soft/VERIFICACAO.md).
+**Prévia em validação.** A beta.10 amplia a [organização automática com contexto, correções e interesse comercial](docs/lume-1/ORGANIZACAO-AUTOMATICA.md). A avaliação dirigida passou com 95/100 e 24/25, sem erro crítico observado; não representa precisão geral nem histórico todo organizado. A versão instalada permanece beta.7; o bloqueio anterior ocorreu no script, antes do instalador. Aceite de utilidade, macOS e hardware de 8 GB continuam pendentes. Consulte o [estado da entrega](DONE.md), os [ajustes de interface e som](docs/lume-soft/AJUSTES-LAYOUT-SOM.md) e o [registro anterior](docs/lume-soft/VERIFICACAO.md).
 
-Este repositório é privado e começa com um snapshot curado. O [histórico anterior](docs/ORIGEM.md), seus commits e worktrees foram preservados; dados pessoais ficam fora deste conteúdo.
+Este repositório é público e começa com um snapshot curado. O [histórico anterior](docs/ORIGEM.md), seus commits e worktrees foram preservados; dados pessoais ficam fora deste conteúdo.
 
 ## Um lugar para recuperar o contexto
 
@@ -86,4 +86,4 @@ docs/          contratos, decisões, evidências e apresentação
 
 O produto nasceu como Assessor 2.0. Alguns nomes internos, identificadores e caminhos foram preservados para manter compatibilidade com perfis existentes. O histórico anterior permanece no repositório de origem; nomes antigos não definem a apresentação atual do produto.
 
-Para contribuir, leia [CONTRIBUTING.md](CONTRIBUTING.md). Para continuar uma tarefa, recupere [DONE.md](DONE.md), [AGENTS.md](AGENTS.md) e o contrato correspondente. O repositório é privado; credenciais, sessões, conversas, bancos pessoais e capturas privadas ficam fora do Git.
+Para contribuir, leia [CONTRIBUTING.md](CONTRIBUTING.md). Para continuar uma tarefa, recupere [DONE.md](DONE.md), [AGENTS.md](AGENTS.md) e o contrato correspondente. Credenciais, sessões, conversas, bancos pessoais e capturas privadas ficam fora deste repositório público.

@@ -1,5 +1,61 @@
 # Estado do Lume 1.0
 
+## Organização automática — candidata beta.10, 28/10/2026
+
+Objetivo: acompanhar conversas e grupos autorizados por assunto/projeto, com fontes,
+interesse comercial visual e perguntas curtas somente para ambiguidades reais.
+Escopo e exclusões permanecem separados de atendimento e envio. Continuação do
+produto existente; a instalação continua beta.7. A ativação do perfil existente
+e sua observação possuem prova separada da avaliação semântica.
+
+- [x] Contexto limitado, continuidade temporal, origem do nome e múltiplos projetos por mensagem; correções e perguntas persistentes.
+- [x] Duas análises pela mesma conta/modelo, prazo total de 120 segundos e revalidação das fontes e permissões. Não é revisão independente de conteúdo.
+- [x] Bloquear derivações de perguntas de identidade nos casos reproduzidos, inclusive fontes de candidatos e leituras antigas; preservar pedidos legítimos e correções manuais.
+- [x] Revisão técnica independente da barreira de identidade: 234/234 testes, sem falha ou skip, incluindo integração e MCP.
+- [x] Reservar fontes completas dos candidatos e impedir vínculo genérico sustentado só por identificação nominal. Revisão independente: 134/134 e, após correção dos resumos conciliados, 82/82; são execuções sobrepostas. Contrato atual `9e5e576aa9cba5ba5c5675436529314c5fa2490c398bc31a11c32fa6b80aae7e`.
+- [x] Avaliação semântica do contrato atual: principal V9 95/100 e complemento V6 24/25, zero críticos em ambos; rótulos preservados e revisão independente. Os conjuntos dirigidos não estimam precisão geral.
+- [x] Revisar bytes e gates do snapshot curado: 45/45 arquivos iguais à origem, 86/86 testes focais; retomada de contexto incompleto em 131/131 na origem. Candidata final09 com pacote 4/4, integridade, fontes e 134 arquivos do payload conferidos; perfil sintético nativo com claro/escuro, 1024 e zoom 200%.
+- [x] Ativação realizada após aprovação semântica e recuperação verificada: alcance atual/futuro com exclusões, sem habilitar envios. Primeiro projeto e vínculos automáticos observados no perfil existente. Leitura real de Agora/Projetos/Vendas e fonte em três ações; captura do renderer nativo e zero erro HTTP/JavaScript no percurso.
+- [x] Código enviado e conferido nos dois destinos: origem `cc4ed8d`, snapshot `0f1e6c7`; 45 blobs Git do código iguais entre os repositórios. Documentação e privacidade revisadas separadamente, com provas pessoais fora do Git.
+
+Depois da observação, o aplicativo encerrou normalmente e reabriu no perfil
+existente, sem argumentos de depuração; a fila retomou. A primeira revisão dos
+efeitos reais não encontrou erro crítico no recorte, mas registrou uma consulta
+de preço com objeto implícito. Isso não aprova todas as associações futuras.
+O aplicativo aberto é a candidata empacotada beta.10; a instalação registrada
+continua beta.7. Instalação, ícone efetivo, busca do Windows e utilidade permanecem
+pendentes. Nenhuma instalação alternativa ou limpeza dos atalhos foi executada.
+
+As avaliações finais tiveram 200 e 50 respostas, respectivamente. Cinco desvios
+principais e um complementar permanecem registrados. Sem prova suficiente para
+generalizar as temperaturas quente/frio ou o histórico inteiro. O complemento V5
+teve 22/25 e um erro crítico, preservados no registro privado;
+motivou a reserva de bases e a barreira de atribuição nominal. A V4 anterior teve
+17/25 e quatro críticos. As cópias, respostas e rótulos V6/V9 estão congelados, com
+semântica e denominadores preservados. As barreiras lexicais cobrem casos reproduzidos,
+sem promessa de interpretação geral. Detalhes em
+[Organização automática](docs/lume-1/ORGANIZACAO-AUTOMATICA.md).
+
+A regressão de 126 arquivos no corte anterior `2ab1138` terminou com 1.287/1.289
+testes aprovados. Duas expectativas antigas foram corrigidas: o botão de repetir
+precisava de seletor específico e o inventário fechado MCP precisava dos helpers
+atuais. Os dois arquivos passaram em 19/19 no original e, independentemente, em
+19/19 neste repositório após sincronização por lista explícita. Isso não reescreve
+o resultado da rodada ampla nem substitui os gates das alterações posteriores.
+
+Verificar: `node --test --test-concurrency=1 test/lume-auto-*.test.js` e
+`node test/lume-auto-ui.e2e.mjs --run`. Testes sintéticos não substituem avaliação
+real, instalação ou aceite. As provas privadas e o perfil ficam fora do Git.
+
+A comparação inicial de abertura encontrou +17% na montagem final09. A investigação
+pareada A–B–B–A na mesma máquina não repetiu a regressão: medianas 1,548 s e 1,487 s.
+Isso não demonstra ganho causal, desempenho em 8 GB ou validação de macOS. O recurso
+PE tem o fantasma amarelo, mas a consulta ao shell ainda retornou ícone genérico;
+barra de tarefas e busca do Windows permanecem sem aprovação.
+
+Visibilidade conferida em 28/10/2026: este repositório está público; a origem
+permanece privada. Nenhuma mudança de visibilidade foi feita nesta revisão.
+
 ## Ícone e mensagem para a guilda — observação posterior de 27/10/2026
 
 Mensagem de WhatsApp reduzida a seis funções, com convite gratuito para solicitar acesso ao piloto. Repositório permanece privado; não foi anunciado download público disponível. Nada enviado à guilda.

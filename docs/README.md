@@ -1,10 +1,11 @@
 # Documentação do Lume
 
-O ponto de entrada do produto é o [README principal](../README.md). A revisão beta.9 corrige diagramação e espaçamento e confere os sons da companhia. A instalação permanece beta.7; o bloqueio anterior do script ocorreu antes do NSIS. O envio anterior confirmado é `0a772a2`, com Actions desligado. Estados históricos continuam identificados por data e não substituem a entrega atual. Consulte os [ajustes e provas atuais](lume-soft/AJUSTES-LAYOUT-SOM.md), o [texto para a guilda](lume-soft/ANUNCIO-GUILDA.md) e o [registro anterior](lume-soft/VERIFICACAO.md).
+O ponto de entrada do produto é o [README principal](../README.md). A candidata beta.10 amplia a [organização automática das conversas](lume-1/ORGANIZACAO-AUTOMATICA.md), com avaliação dirigida aprovada nos conjuntos de 100 e 25 casos. A instalação permanece beta.7; o bloqueio anterior do script ocorreu antes do NSIS. Estados históricos continuam identificados por data e não substituem a entrega atual. Consulte o [estado da entrega](../DONE.md), os [ajustes de interface e som](lume-soft/AJUSTES-LAYOUT-SOM.md), o [texto para a guilda](lume-soft/ANUNCIO-GUILDA.md) e o [registro anterior](lume-soft/VERIFICACAO.md).
 
 | Preciso encontrar… | Comece aqui |
 | --- | --- |
 | O que está sendo entregue e o que falta | [DONE](../DONE.md) |
+| Organização automática, autorização e limites da candidata | [Organização das conversas](lume-1/ORGANIZACAO-AUTOMATICA.md) |
 | Regressão, envios confirmados e limites do corte atual | [Verificação atual](lume-soft/VERIFICACAO.md) |
 | Origem do snapshot e limites da curadoria | [Origem deste repositório](ORIGEM.md) |
 | A revisão atual do Lume 1.0 | [Experiência, presença e ritmo](lume-soft/README.md) |
